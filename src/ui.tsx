@@ -26,7 +26,7 @@ export const uiComponent = () => {
         positionType: 'absolute',
         width: '100%',
         height: '80%',
-        alignItems: 'bottom-center',
+        alignItems: 'flex-end',
         justifyContent: 'center'
       }}
     >

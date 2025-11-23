@@ -111,33 +111,12 @@
             "parent": 530
           }
         },
-        "514": {
+        "513": {
           "json": {
             "position": {
-              "x": 2.8831589221954346,
+              "x": 8.04520034790039,
               "y": 0,
-              "z": 11.753228187561035
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "scale": {
-              "x": 1.5,
-              "y": 1.5,
-              "z": 1.5
-            },
-            "parent": 0
-          }
-        },
-        "515": {
-          "json": {
-            "position": {
-              "x": 2,
-              "y": 0,
-              "z": 12
+              "z": 7.747628688812256
             },
             "rotation": {
               "x": 0,
@@ -160,48 +139,6 @@
               "y": 1,
               "z": 12.568398475646973
             },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "parent": 0
-          }
-        },
-        "517": {
-          "json": {
-            "position": {
-              "x": 13.670000076293945,
-              "y": 0,
-              "z": 9.050000190734863
-            },
-            "rotation": {
-              "x": 0,
-              "y": 1,
-              "z": 0,
-              "w": 0
-            },
-            "scale": {
-              "x": 3,
-              "y": 3,
-              "z": 3
-            },
-            "parent": 0
-          }
-        },
-        "518": {
-          "json": {
-            "position": {
-              "x": -0.03449999913573265,
-              "y": 0,
-              "z": 0.28439998626708984
-            },
             "scale": {
               "x": 1,
               "y": 1,
@@ -212,48 +149,6 @@
               "y": 0,
               "z": 0,
               "w": 1
-            },
-            "parent": 519
-          }
-        },
-        "519": {
-          "json": {
-            "position": {
-              "x": 7.71999979019165,
-              "y": 8.760252967476845e-9,
-              "z": 11.210000038146973
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "parent": 0
-          }
-        },
-        "520": {
-          "json": {
-            "position": {
-              "x": 11.435004234313965,
-              "y": 3.483728505671024e-8,
-              "z": 8.666311264038086
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
             },
             "parent": 0
           }
@@ -286,16 +181,16 @@
               "y": 3.483728505671024e-8,
               "z": 12.923669815063477
             },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
             "rotation": {
               "x": 0,
               "y": -0.3951207995414734,
               "z": 0,
               "w": 0.9186291694641113
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
             },
             "parent": 0
           }
@@ -370,16 +265,16 @@
               "y": 0.6487875580787659,
               "z": -4.169960021972656
             },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
             "rotation": {
               "x": -0.1636798083782196,
               "y": 0.5747871398925781,
               "z": 0.7914681434631348,
               "w": 0.1280893087387085
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
             },
             "parent": 521
           }
@@ -401,6 +296,48 @@
               "y": 1,
               "z": 0,
               "w": 0
+            },
+            "parent": 0
+          }
+        },
+        "528": {
+          "json": {
+            "position": {
+              "x": 8.076070785522461,
+              "y": 0,
+              "z": 7.467118263244629
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "529": {
+          "json": {
+            "position": {
+              "x": 7.421268463134766,
+              "y": 0,
+              "z": 7.399753570556641
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             },
             "parent": 0
           }
@@ -447,12 +384,17 @@
             "parent": 0
           }
         },
-        "534": {
+        "535": {
           "json": {
             "position": {
-              "x": 10.5,
+              "x": 5.25,
               "y": 0,
-              "z": 8.25
+              "z": 13.5
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
             },
             "rotation": {
               "x": 0,
@@ -460,20 +402,15 @@
               "z": 0,
               "w": 1
             },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
             "parent": 0
           }
         },
-        "535": {
+        "536": {
           "json": {
             "position": {
-              "x": 5.25,
+              "x": 2.5,
               "y": 0,
-              "z": 13.5
+              "z": 7.5
             },
             "rotation": {
               "x": 0,
@@ -552,27 +489,6 @@
             "parent": 537
           }
         },
-        "540": {
-          "json": {
-            "position": {
-              "x": 13.710000038146973,
-              "y": 8.760252967476845e-9,
-              "z": 12.199999809265137
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "parent": 0
-          }
-        },
         "541": {
           "json": {
             "position": {
@@ -590,27 +506,6 @@
               "y": 0.707099974155426,
               "z": 0,
               "w": -0.707099974155426
-            },
-            "parent": 0
-          }
-        },
-        "542": {
-          "json": {
-            "position": {
-              "x": 5.25,
-              "y": 0,
-              "z": 13.5
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
             },
             "parent": 0
           }
@@ -636,33 +531,12 @@
             "parent": 0
           }
         },
-        "544": {
+        "546": {
           "json": {
             "position": {
-              "x": 8.145596504211426,
-              "y": 1,
-              "z": 13.670000076293945
-            },
-            "scale": {
-              "x": 4,
-              "y": 3,
-              "z": 1
-            },
-            "rotation": {
-              "x": 1,
+              "x": 12.154947280883789,
               "y": 0,
-              "z": 0,
-              "w": 0
-            },
-            "parent": 0
-          }
-        },
-        "545": {
-          "json": {
-            "position": {
-              "x": 9.25,
-              "y": 0,
-              "z": 9.75
+              "z": 12.884041786193848
             },
             "rotation": {
               "x": 0,
@@ -672,6 +546,174 @@
             },
             "scale": {
               "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "547": {
+          "json": {
+            "position": {
+              "x": 2.135986089706421,
+              "y": 0,
+              "z": 6.524251461029053
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "548": {
+          "json": {
+            "position": {
+              "x": 2.920072555541992,
+              "y": 0,
+              "z": 6.574861526489258
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "549": {
+          "json": {
+            "position": {
+              "x": 5.642425537109375,
+              "y": 0,
+              "z": 3.665266990661621
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "552": {
+          "json": {
+            "position": {
+              "x": 7.34792423248291,
+              "y": 0,
+              "z": 3.6274898052215576
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "554": {
+          "json": {
+            "position": {
+              "x": 4.25,
+              "y": 0,
+              "z": 11.5
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "556": {
+          "json": {
+            "position": {
+              "x": 6.426058292388916,
+              "y": 0,
+              "z": 14.073318481445312
+            },
+            "rotation": {
+              "x": 0,
+              "y": -1,
+              "z": 0,
+              "w": 6.123234262925839e-17
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "557": {
+          "json": {
+            "position": {
+              "x": 9.884124755859375,
+              "y": 0,
+              "z": 14.07331657409668
+            },
+            "rotation": {
+              "x": 0,
+              "y": -1,
+              "z": 0,
+              "w": 6.123234262925839e-17
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
+        "558": {
+          "json": {
+            "position": {
+              "x": 8.159476280212402,
+              "y": 0,
+              "z": 14.069999694824219
+            },
+            "rotation": {
+              "x": 0,
+              "y": 1,
+              "z": 0,
+              "w": 0
+            },
+            "scale": {
+              "x": 1.2000000476837158,
               "y": 1,
               "z": 1
             },
@@ -701,12 +743,6 @@
           "json": {
             "networkId": 0,
             "entityId": 8002
-          }
-        },
-        "518": {
-          "json": {
-            "networkId": 0,
-            "entityId": 8003
           }
         },
         "532": {
@@ -779,16 +815,9 @@
             "invisibleMeshesCollisionMask": 3
           }
         },
-        "514": {
+        "513": {
           "json": {
-            "src": "assets/asset-packs/potion_cauldron/Cauldron_01/Cauldron_01.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 3
-          }
-        },
-        "515": {
-          "json": {
-            "src": "assets/asset-packs/round_jewelled_box/Chest_01/Chest_01.glb",
+            "src": "assets/asset-packs/fruit_3/Fruit 3.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
@@ -796,27 +825,6 @@
         "516": {
           "json": {
             "src": "assets/asset-packs/pink_potion/Potion_01/Potion_01.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 3
-          }
-        },
-        "517": {
-          "json": {
-            "src": "assets/asset-packs/salamander_stove/Stove_01/Stove_01.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 3
-          }
-        },
-        "519": {
-          "json": {
-            "src": "assets/asset-packs/rustic_round_stool/Chairwood_01.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 3
-          }
-        },
-        "520": {
-          "json": {
-            "src": "assets/asset-packs/anvil/Anvil_01/Anvil_01.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
@@ -870,6 +878,20 @@
             "invisibleMeshesCollisionMask": 3
           }
         },
+        "528": {
+          "json": {
+            "src": "assets/asset-packs/fruit_6/Fruit 6.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "529": {
+          "json": {
+            "src": "assets/asset-packs/pot/Pot.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
         "530": {
           "json": {
             "src": "assets/asset-packs/stone_brick_threshold/Module_Stone_Straight_Door_01/Module_Stone_Straight_Door_01.glb",
@@ -884,16 +906,16 @@
             "invisibleMeshesCollisionMask": 0
           }
         },
-        "534": {
+        "535": {
           "json": {
-            "src": "assets/asset-packs/tweezers/Tweezers_01/Tweezers_01.glb",
+            "src": "assets/asset-packs/yellow_magic_stone/Glowing_Stone_02/Glowing_Stone_02.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
         },
-        "535": {
+        "536": {
           "json": {
-            "src": "assets/asset-packs/yellow_magic_stone/Glowing_Stone_02/Glowing_Stone_02.glb",
+            "src": "assets/asset-packs/barrel_3/Barrel 3.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
@@ -912,23 +934,9 @@
             "invisibleMeshesCollisionMask": 2
           }
         },
-        "540": {
-          "json": {
-            "src": "assets/asset-packs/chest/Trunk_01/Trunk_01.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 3
-          }
-        },
         "541": {
           "json": {
             "src": "assets/asset-packs/corner_stone_brick_wall/Module_Stone_Curve_01/Module_Stone_Curve_01.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 3
-          }
-        },
-        "542": {
-          "json": {
-            "src": "assets/asset-packs/yellow_magic_stone/Crystal_05/Crystal_05.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
@@ -940,16 +948,65 @@
             "invisibleMeshesCollisionMask": 3
           }
         },
-        "544": {
+        "546": {
           "json": {
-            "src": "assets/asset-packs/wooden_crate/VegetablesBox_01/VegetablesBox_01.glb",
+            "src": "assets/asset-packs/barrel_4/Barrel 4.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
         },
-        "545": {
+        "547": {
           "json": {
-            "src": "assets/asset-packs/wooden_axe/Axe_01/Axe_01.glb",
+            "src": "assets/asset-packs/barrel_1/Barrel 1.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "548": {
+          "json": {
+            "src": "assets/asset-packs/barrel_2/Barrel 2.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "549": {
+          "json": {
+            "src": "assets/asset-packs/axe_2/Axe 2.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "552": {
+          "json": {
+            "src": "assets/asset-packs/logs_2/Logs 2.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "554": {
+          "json": {
+            "src": "assets/asset-packs/books/Books.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "556": {
+          "json": {
+            "src": "assets/asset-packs/drawers/Furnit 2.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "557": {
+          "json": {
+            "src": "assets/asset-packs/drawers/Furnit 2.glb",
+            "visibleMeshesCollisionMask": 0,
+            "invisibleMeshesCollisionMask": 3
+          }
+        },
+        "558": {
+          "json": {
+            "src": "assets/asset-packs/drawers/Furnit 2.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
           }
@@ -974,39 +1031,14 @@
             "value": "Wooden Door_2"
           }
         },
-        "514": {
+        "513": {
           "json": {
-            "value": "Potion Cauldron"
-          }
-        },
-        "515": {
-          "json": {
-            "value": "Round Jewelled Box"
+            "value": "Fruit 3"
           }
         },
         "516": {
           "json": {
             "value": "Pink Potion"
-          }
-        },
-        "517": {
-          "json": {
-            "value": "Salamander Stove"
-          }
-        },
-        "518": {
-          "json": {
-            "value": "Sit Spot"
-          }
-        },
-        "519": {
-          "json": {
-            "value": "Rustic Round Stool"
-          }
-        },
-        "520": {
-          "json": {
-            "value": "Anvil"
           }
         },
         "521": {
@@ -1044,6 +1076,16 @@
             "value": "Corner Stone Brick Wall"
           }
         },
+        "528": {
+          "json": {
+            "value": "Fruit 6"
+          }
+        },
+        "529": {
+          "json": {
+            "value": "Pot"
+          }
+        },
         "530": {
           "json": {
             "value": "Stone Brick Threshold"
@@ -1054,14 +1096,14 @@
             "value": "Invisible Wall"
           }
         },
-        "534": {
-          "json": {
-            "value": "Tweezers"
-          }
-        },
         "535": {
           "json": {
             "value": "Yellow Magic Stone"
+          }
+        },
+        "536": {
+          "json": {
+            "value": "Barrel 3"
           }
         },
         "537": {
@@ -1079,19 +1121,9 @@
             "value": "Tile 1"
           }
         },
-        "540": {
-          "json": {
-            "value": "Chest"
-          }
-        },
         "541": {
           "json": {
             "value": "Corner Stone Brick Wall_2"
-          }
-        },
-        "542": {
-          "json": {
-            "value": "Yellow Magic Stone_2"
           }
         },
         "543": {
@@ -1099,14 +1131,49 @@
             "value": "Stone Brick Threshold_2"
           }
         },
-        "544": {
+        "546": {
           "json": {
-            "value": "Wooden Crate"
+            "value": "Barrel 4"
           }
         },
-        "545": {
+        "547": {
           "json": {
-            "value": "Wooden Axe"
+            "value": "Barrel 1"
+          }
+        },
+        "548": {
+          "json": {
+            "value": "Barrel 2"
+          }
+        },
+        "549": {
+          "json": {
+            "value": "Axe 2"
+          }
+        },
+        "552": {
+          "json": {
+            "value": "Logs 2"
+          }
+        },
+        "554": {
+          "json": {
+            "value": "Books"
+          }
+        },
+        "556": {
+          "json": {
+            "value": "Drawers"
+          }
+        },
+        "557": {
+          "json": {
+            "value": "Drawers_2"
+          }
+        },
+        "558": {
+          "json": {
+            "value": "Drawers_2_3"
           }
         }
       }
@@ -1130,22 +1197,6 @@
                   "hoverText": "Open / Close",
                   "maxDistance": 10,
                   "showFeedback": true
-                }
-              }
-            ]
-          }
-        },
-        "519": {
-          "json": {
-            "pointerEvents": [
-              {
-                "eventType": 1,
-                "eventInfo": {
-                  "button": 1,
-                  "hoverText": "Sit Here",
-                  "maxDistance": 10,
-                  "showFeedback": true,
-                  "showHighlight": true
                 }
               }
             ]
@@ -1179,13 +1230,6 @@
             ]
           }
         },
-        "518": {
-          "json": {
-            "componentIds": [
-              2709697014
-            ]
-          }
-        },
         "532": {
           "json": {
             "componentIds": [
@@ -1204,11 +1248,6 @@
         "protocolBuffer": "PBVisibilityComponent"
       },
       "data": {
-        "518": {
-          "json": {
-            "visible": false
-          }
-        },
         "532": {
           "json": {
             "visible": false
@@ -1239,7 +1278,8 @@
               "Tag Group 1",
               "Tag Group 2",
               "Tag Group 3",
-              "Tag Group 4"
+              "Tag Group 4",
+              "iron-cart"
             ]
           }
         }
@@ -1258,7 +1298,7 @@
         "serializationType": "map"
       },
       "data": {
-        "517": {
+        "0": {
           "json": {
             "gizmo": 1
           }
@@ -1591,38 +1631,41 @@
       "data": {
         "0": {
           "json": {
-            "name": "New Scene",
+            "name": "Orcs want axes",
             "description": "Empty Scene Template",
-            "thumbnail": "",
-            "categories": [],
+            "ageRating": "T",
+            "categories": [
+              "game"
+            ],
             "author": "SDK",
-            "email": "",
-            "tags": [],
+            "tags": [
+              ""
+            ],
             "layout": {
+              "base": {
+                "x": 0,
+                "y": 0
+              },
               "parcels": [
                 {
                   "x": 0,
                   "y": 0
                 }
-              ],
-              "base": {
-                "x": 0,
-                "y": 0
-              }
+              ]
             },
-            "silenceVoiceChat": false,
-            "disablePortableExperiences": false,
-            "skyboxConfig": {},
+            "skyboxConfig": {
+              "fixedTime": 86340
+            },
             "spawnPoints": [
               {
-                "name": "spawn1",
+                "name": "Spawn Point 1",
                 "default": true,
                 "position": {
                   "x": {
                     "$case": "range",
                     "value": [
-                      0,
-                      3
+                      6,
+                      9
                     ]
                   },
                   "y": {
@@ -1635,8 +1678,8 @@
                   "z": {
                     "$case": "range",
                     "value": [
-                      0,
-                      3
+                      6,
+                      9
                     ]
                   }
                 },
@@ -1697,27 +1740,30 @@
                 "entity": 0,
                 "open": true,
                 "children": [
-                  517,
-                  520,
                   521,
                   522,
                   527,
                   530,
                   538,
-                  519,
                   532,
                   537,
-                  540,
                   541,
                   543,
-                  544,
-                  514,
-                  515,
                   516,
-                  534,
                   535,
-                  542,
-                  545
+                  513,
+                  528,
+                  529,
+                  536,
+                  546,
+                  547,
+                  548,
+                  549,
+                  552,
+                  554,
+                  556,
+                  557,
+                  558
                 ]
               },
               {
@@ -1726,14 +1772,6 @@
               },
               {
                 "entity": 2,
-                "children": []
-              },
-              {
-                "entity": 517,
-                "children": []
-              },
-              {
-                "entity": 520,
                 "children": []
               },
               {
@@ -1787,16 +1825,6 @@
                 "children": []
               },
               {
-                "entity": 518,
-                "children": []
-              },
-              {
-                "entity": 519,
-                "children": [
-                  518
-                ]
-              },
-              {
                 "entity": 532,
                 "children": []
               },
@@ -1811,10 +1839,6 @@
                 "children": []
               },
               {
-                "entity": 540,
-                "children": []
-              },
-              {
                 "entity": 541,
                 "children": []
               },
@@ -1824,23 +1848,7 @@
                 "children": []
               },
               {
-                "entity": 544,
-                "children": []
-              },
-              {
-                "entity": 514,
-                "children": []
-              },
-              {
-                "entity": 515,
-                "children": []
-              },
-              {
                 "entity": 516,
-                "children": []
-              },
-              {
-                "entity": 534,
                 "children": []
               },
               {
@@ -1848,11 +1856,55 @@
                 "children": []
               },
               {
-                "entity": 542,
+                "entity": 513,
                 "children": []
               },
               {
-                "entity": 545,
+                "entity": 528,
+                "children": []
+              },
+              {
+                "entity": 529,
+                "children": []
+              },
+              {
+                "entity": 536,
+                "children": []
+              },
+              {
+                "entity": 546,
+                "children": []
+              },
+              {
+                "entity": 547,
+                "children": []
+              },
+              {
+                "entity": 548,
+                "children": []
+              },
+              {
+                "entity": 549,
+                "children": []
+              },
+              {
+                "entity": 552,
+                "children": []
+              },
+              {
+                "entity": 554,
+                "children": []
+              },
+              {
+                "entity": 556,
+                "children": []
+              },
+              {
+                "entity": 557,
+                "children": []
+              },
+              {
+                "entity": 558,
                 "children": []
               }
             ]
@@ -2178,65 +2230,6 @@
               }
             ]
           }
-        },
-        "518": {
-          "json": {
-            "id": 6,
-            "value": [
-              {
-                "name": "Move here",
-                "type": "move_player_here",
-                "jsonPayload": "{}"
-              },
-              {
-                "name": "Sit anim1",
-                "type": "play_default_emote",
-                "jsonPayload": "{\"emote\":\"sittingChair1\"}"
-              },
-              {
-                "name": "Mark as taken",
-                "type": "set_state",
-                "jsonPayload": "{\"state\":\"Taken\"}"
-              },
-              {
-                "name": "Mark as free",
-                "type": "set_state",
-                "jsonPayload": "{\"state\":\"Free\"}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Sit Here",
-                "type": "batch",
-                "jsonPayload": "{\"actions\":[\"Move here\",\"Mark as taken\",\"Random sit anim\"]}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Sit anim2",
-                "type": "play_default_emote",
-                "jsonPayload": "{\"emote\":\"sittingChair2\"}"
-              },
-              {
-                "name": "Random sit anim",
-                "type": "random",
-                "jsonPayload": "{\"actions\":[\"Sit anim1\",\"Sit anim2\"]}"
-              },
-              {
-                "name": "Print text",
-                "type": "show_text",
-                "jsonPayload": "{\"text\":\"Seat is taken\",\"hideAfterSeconds\":2,\"font\":0,\"fontSize\":40,\"textAlign\":7}"
-              },
-              {
-                "name": "Hide text",
-                "type": "hide_text",
-                "jsonPayload": "{}"
-              },
-              {
-                "name": "Show text",
-                "type": "batch",
-                "jsonPayload": "{\"actions\":[\"Hide text\",\"Print text\"]}"
-              }
-            ]
-          }
         }
       }
     },
@@ -2537,69 +2530,6 @@
               }
             ]
           }
-        },
-        "518": {
-          "json": {
-            "value": [
-              {
-                "type": "on_player_leaves_area",
-                "conditions": [
-                  {
-                    "id": 7,
-                    "type": "when_state_is",
-                    "value": "Taken"
-                  }
-                ],
-                "operation": "and",
-                "actions": [
-                  {
-                    "id": 6,
-                    "name": "Mark as free"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "519": {
-          "json": {
-            "value": [
-              {
-                "type": "on_input_action",
-                "conditions": [
-                  {
-                    "id": 7,
-                    "type": "when_state_is",
-                    "value": "Free"
-                  }
-                ],
-                "operation": "and",
-                "actions": [
-                  {
-                    "id": 6,
-                    "name": "Sit Here"
-                  }
-                ]
-              },
-              {
-                "type": "on_input_action",
-                "conditions": [
-                  {
-                    "id": 7,
-                    "type": "when_state_is",
-                    "value": "Taken"
-                  }
-                ],
-                "operation": "and",
-                "actions": [
-                  {
-                    "id": 6,
-                    "name": "Show text"
-                  }
-                ]
-              }
-            ]
-          }
         }
       }
     },
@@ -2658,16 +2588,6 @@
             ],
             "defaultValue": "Closed"
           }
-        },
-        "518": {
-          "json": {
-            "id": 7,
-            "value": [
-              "Free",
-              "Taken"
-            ],
-            "defaultValue": "Free"
-          }
         }
       }
     },
@@ -2691,22 +2611,10 @@
         "512": {
           "json": {}
         },
-        "514": {
-          "json": {}
-        },
-        "515": {
+        "513": {
           "json": {}
         },
         "516": {
-          "json": {}
-        },
-        "517": {
-          "json": {}
-        },
-        "519": {
-          "json": {}
-        },
-        "520": {
           "json": {}
         },
         "521": {
@@ -2730,6 +2638,12 @@
         "527": {
           "json": {}
         },
+        "528": {
+          "json": {}
+        },
+        "529": {
+          "json": {}
+        },
         "530": {
           "json": {}
         },
@@ -2739,10 +2653,10 @@
         "532": {
           "json": {}
         },
-        "534": {
+        "535": {
           "json": {}
         },
-        "535": {
+        "536": {
           "json": {}
         },
         "537": {
@@ -2751,22 +2665,37 @@
         "538": {
           "json": {}
         },
-        "540": {
-          "json": {}
-        },
         "541": {
-          "json": {}
-        },
-        "542": {
           "json": {}
         },
         "543": {
           "json": {}
         },
-        "544": {
+        "546": {
           "json": {}
         },
-        "545": {
+        "547": {
+          "json": {}
+        },
+        "548": {
+          "json": {}
+        },
+        "549": {
+          "json": {}
+        },
+        "552": {
+          "json": {}
+        },
+        "554": {
+          "json": {}
+        },
+        "556": {
+          "json": {}
+        },
+        "557": {
+          "json": {}
+        },
+        "558": {
           "json": {}
         }
       }
@@ -3336,32 +3265,6 @@
               }
             ],
             "assetId": "ed36149f-76c5-45c4-a678-d4b31c4ed9ca"
-          }
-        },
-        "518": {
-          "json": {
-            "isBasicViewEnabled": false,
-            "componentName": "Sit Spot",
-            "fields": [
-              {
-                "name": "Hover Text",
-                "type": "core::PointerEvents"
-              },
-              {
-                "name": "When Clicked",
-                "type": "asset-packs::Triggers",
-                "basicViewId": "trigger-when-clicked"
-              }
-            ],
-            "assetId": "5369971d-0593-4319-829d-1b2437201a0d"
-          }
-        },
-        "519": {
-          "json": {
-            "isBasicViewEnabled": false,
-            "componentName": "Rustic Round Stool",
-            "fields": [],
-            "assetId": "5369971d-0593-4319-829d-1b2437201a0d"
           }
         }
       }

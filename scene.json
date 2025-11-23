@@ -2,7 +2,7 @@
   "ecs7": true,
   "runtimeVersion": "7",
   "display": {
-    "title": "New Scene",
+    "title": "Orcs want axes",
     "description": "Empty Scene Template",
     "favicon": "favicon_asset",
     "navmapThumbnail": ""
@@ -13,7 +13,9 @@
     "email": ""
   },
   "main": "bin/index.js",
-  "tags": [],
+  "tags": [
+    "game"
+  ],
   "scene": {
     "parcels": [
       "0,0"
@@ -22,20 +24,20 @@
   },
   "spawnPoints": [
     {
-      "name": "spawn1",
+      "name": "Spawn Point 1",
       "default": true,
       "position": {
         "x": [
-          0,
-          3
+          6,
+          9
         ],
         "y": [
           0,
           0
         ],
         "z": [
-          0,
-          3
+          6,
+          9
         ]
       },
       "cameraTarget": {
@@ -55,7 +57,10 @@
   },
   "source": {
     "origin": "creator-hub",
-    "projectId": "a2ed11af-3a0a-464c-a686-1fffdb085bf0"
+    "projectId": "61f670a3-a677-4b7c-a808-698134af94fb"
   },
-  "skyboxConfig": {}
+  "skyboxConfig": {
+    "fixedTime": 86340
+  },
+  "rating": "T"
 }
