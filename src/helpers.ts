@@ -362,3 +362,23 @@ export function getItemTypeFromModelPath(modelPath: string): ItemType {
   // Por defecto
   return ItemType.HERB // fallback
 }
+
+// Función para mostrar el game over
+export function gameOver() {
+  // Crear entidad para el game over
+  const gameOverEntity = engine.addEntity()
+  
+  // Configurar transform con posición (8, 2, 10) y escala (2, 2, 1)
+  Transform.create(gameOverEntity, {
+    position: Vector3.create(8, 2, 10),
+    rotation: Quaternion.fromEulerDegrees(0, 0, 0),
+    scale: Vector3.create(2, 2, 1)
+  })
+  
+  // Cargar el modelo de game over
+  GltfContainer.create(gameOverEntity, {
+    src: 'asset-packs/game_over/gameover2.glb'
+  })
+  
+  // Aquí se pueden agregar más efectos en el futuro
+}

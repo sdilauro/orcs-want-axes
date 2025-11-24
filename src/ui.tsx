@@ -6,7 +6,6 @@ let currentMessage: string = ''
 // Contadores de entregas
 let goodDelivered: number = 0
 let badDelivered: number = 0
-let wrongItemDelivered: number = 0
 
 export function setMessage(message: string) {
   currentMessage = message
@@ -29,8 +28,8 @@ export function incrementBadDelivered() {
   badDelivered++
 }
 
-export function incrementWrongItemDelivered() {
-  wrongItemDelivered++
+export function getBadDelivered(): number {
+  return badDelivered
 }
 
 export const uiComponent = () => {
