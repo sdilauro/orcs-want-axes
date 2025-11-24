@@ -4,7 +4,7 @@ import { uiComponent } from './ui'
 // Importar NPCSpawner
 import { NPCSpawner } from './npcSpawner'
 // Importar helpers
-import { setupCinematicCamera, createWorkStations } from './helpers'
+import { setupCinematicCamera, createWorkStations, createStorageStations, createDiscardStation } from './helpers'
 
 export function main() {
   // Configurar la cámara cinematográfica
@@ -14,7 +14,8 @@ export function main() {
   ReactEcsRenderer.setUiRenderer(uiComponent)
 
   createWorkStations()
-
+  createStorageStations()
+  createDiscardStation()
 
   // Crear el spawner de NPCs
   new NPCSpawner(
@@ -22,5 +23,4 @@ export function main() {
     1.2   // speed en metros por segundo
   )
 
-  
 }

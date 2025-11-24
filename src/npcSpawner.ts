@@ -1,6 +1,7 @@
 import { Vector3, Quaternion, Color3, Color4 } from '@dcl/sdk/math'
-import { engine, Transform, Entity, AvatarShape, Tween, EasingFunction, pointerEventsSystem, InputAction, MeshCollider, ColliderLayer, Billboard, BillboardMode, MeshRenderer, Material as MaterialECS, Schemas, AvatarAttach, AvatarAnchorPointType, GltfContainer, PointerEvents, PointerEventType } from '@dcl/sdk/ecs'
-import { Material } from './helpers'
+import { engine, Transform, Entity, AvatarShape, Tween, EasingFunction, pointerEventsSystem, InputAction, MeshCollider, ColliderLayer, Billboard, BillboardMode, MeshRenderer, Material as MaterialECS, Schemas, AvatarAttach, AvatarAnchorPointType, GltfContainer } from '@dcl/sdk/ecs'
+import { Material, showUIMessage, ItemType, clearUIMessage } from './helpers'
+import { incrementGoodDelivered, incrementBadDelivered, incrementWrongItemDelivered } from './ui'
 
 // Tipo para un spot
 type Spot = {
@@ -106,13 +107,26 @@ const NPCItem = engine.defineComponent('NPCItem', NPCItemSchema)
 // Función helper para verificar si el jugador tiene un item attachado
 function hasItemInRightHand(): { hasItem: boolean, itemEntity?: Entity, itemId?: string } {
   try {
+    // Obtener todos los NPCs para excluirlos
+    const npcAvatarIds = new Set<string>()
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      // Los NPCs tienen name vacío, el jugador tiene un name
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
+      }
+    }
+    
     for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
       if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        if (Material.has(entity)) {
-          const item = Material.get(entity)
-          return { hasItem: true, itemEntity: entity, itemId: item?.id }
+        // Verificar que el item NO esté attachado a un NPC
+        // Si avatarId es undefined o no está en la lista de NPCs, es del jugador
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          if (Material.has(entity)) {
+            const item = Material.get(entity)
+            return { hasItem: true, itemEntity: entity, itemId: item?.id }
+          }
+          return { hasItem: true, itemEntity: entity }
         }
-        return { hasItem: true, itemEntity: entity }
       }
     }
   } catch (error) {
@@ -124,10 +138,22 @@ function hasItemInRightHand(): { hasItem: boolean, itemEntity?: Entity, itemId?:
 // Función para remover el item de la mano del jugador
 function removePlayerRightHandItem() {
   try {
+    // Obtener todos los NPCs para excluirlos
+    const npcAvatarIds = new Set<string>()
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      // Los NPCs tienen name vacío, el jugador tiene un name
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
+      }
+    }
+    
     for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
       if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        engine.removeEntity(entity)
-        return
+        // Solo eliminar si NO está attachado a un NPC
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          engine.removeEntity(entity)
+          return
+        }
       }
     }
   } catch (error) {
@@ -249,7 +275,7 @@ export class NPCSpawner {
     
     AvatarShape.create(npc, {
       id: addressId,
-      name: 'NPC', // Usar un nombre por defecto en lugar de cadena vacía para evitar problemas de serialización
+      name: '', // Cadena vacía para ocultar el nombre del NPC
       bodyShape: bodyShape,
       wearables: wearableSet,
       skinColor: skinColor,
@@ -276,9 +302,6 @@ export class NPCSpawner {
       } catch (e) {}
       try {
         engine.removeSystem(`arrivalEmoteEnd-${npcId}`)
-      } catch (e) {}
-      try {
-        engine.removeSystem(`npcHover-${npcId}`)
       } catch (e) {}
       try {
         engine.removeSystem(`checkArrival-${npcId}`)
@@ -384,89 +407,125 @@ export class NPCSpawner {
     
     // Función para dar un item al NPC
     const giveItemToNPC = (npcEntity: Entity, playerItemEntity: Entity, itemId?: string) => {
-      // Activar emote de agradecimiento cuando recibe el item
-      if (AvatarShape.has(npcEntity)) {
-        const thankEmotes = ['clap', 'wave', 'fistpump']
-        const thankEmote = thankEmotes[Math.floor(Math.random() * thankEmotes.length)]
-        const avatarShape = AvatarShape.getMutable(npcEntity)
-        // Asegurarse de que el NPC esté quieto antes de activar el emote
-        if (Tween.has(npcEntity)) {
-          Tween.deleteFrom(npcEntity)
+      try {
+        // Determinar el tipo de item recibido
+        let receivedItemType: string | undefined = itemId
+        if (!receivedItemType && Material.has(playerItemEntity)) {
+          const material = Material.get(playerItemEntity)
+          receivedItemType = material?.id
         }
-        avatarShape.expressionTriggerId = thankEmote
-        console.log(`NPC ${npcId} activando emote de agradecimiento: ${thankEmote}`)
         
-        // Sistema para volver a la expresión normal después de 2 segundos
-        const thankEmoteSystemName = `thankEmote-${npcId}`
-        let thankEmoteElapsed = 0
-        engine.addSystem((dt: number) => {
-          if (!AvatarShape.has(npcEntity) || !Transform.has(npcEntity)) {
-            engine.removeSystem(thankEmoteSystemName)
-            return
+        // Obtener información del item del jugador ANTES de removerlo
+        let playerItemTransform: any = null
+        let itemModel = ''
+        
+        if (Transform.has(playerItemEntity)) {
+          playerItemTransform = Transform.get(playerItemEntity)
+        }
+        
+        if (GltfContainer.has(playerItemEntity)) {
+          const gltf = GltfContainer.get(playerItemEntity)
+          itemModel = gltf.src
+        }
+        
+        // Validar si el item es correcto según el tipo de NPC
+        // Orco + Axe = good, Elfo + Potion = good, cualquier otro caso = wrong
+        const expectedItemType = isElf ? ItemType.POTION : ItemType.AXE
+        const isCorrectItem = receivedItemType === expectedItemType
+        
+        // Remover el item del jugador INMEDIATAMENTE para que pueda tomar otro
+        // Eliminar directamente la entidad que se pasó como parámetro
+        try {
+          engine.removeEntity(playerItemEntity)
+        } catch (error) {
+          // Si falla, intentar con la función helper
+          console.error('Error al eliminar entidad directamente, usando helper:', error)
+          removePlayerRightHandItem()
+        }
+        
+        // Limpiar cualquier mensaje anterior de la UI
+        clearUIMessage()
+        
+        // Actualizar contadores según el resultado
+        if (isCorrectItem) {
+          incrementGoodDelivered()
+        } else {
+          incrementBadDelivered()
+          incrementWrongItemDelivered()
+          showUIMessage('Wrong item')
+        }
+        
+        // Si el item es correcto, hacer que el NPC aplauda
+        if (isCorrectItem && AvatarShape.has(npcEntity)) {
+          const avatarShape = AvatarShape.getMutable(npcEntity)
+          // Asegurarse de que el NPC esté quieto antes de activar el emote
+          if (Tween.has(npcEntity)) {
+            Tween.deleteFrom(npcEntity)
           }
+          avatarShape.expressionTriggerId = 'clap'
+          console.log(`NPC ${npcId} activando emote de agradecimiento: clap`)
           
-          thankEmoteElapsed += dt * 1000
-          
-          if (thankEmoteElapsed >= 2000) {
-            // No modificar expressionTriggerId - simplemente dejar que termine naturalmente
-            engine.removeSystem(thankEmoteSystemName)
-          }
-        }, 0, thankEmoteSystemName)
-      }
-      
-      // Obtener información del item del jugador
-      const playerItemTransform = Transform.get(playerItemEntity)
-      let itemModel = ''
-      
-      if (GltfContainer.has(playerItemEntity)) {
-        const gltf = GltfContainer.get(playerItemEntity)
-        itemModel = gltf.src
-      }
-      
-      // Remover el item del jugador
-      removePlayerRightHandItem()
-      
-      // Crear nuevo item para el NPC
-      const npcItemEntity = engine.addEntity()
-      
-      Transform.create(npcItemEntity, {
-        position: Vector3.create(0, 0, 0),
-        rotation: playerItemTransform.rotation,
-        scale: playerItemTransform.scale || Vector3.create(1, 1, 1)
-      })
-      
-      // Cargar el modelo del item
-      if (itemModel) {
-        GltfContainer.create(npcItemEntity, {
-          src: itemModel,
-          visibleMeshesCollisionMask: 0,
-          invisibleMeshesCollisionMask: 0
+          // Sistema para volver a la expresión normal después de 2 segundos
+          const thankEmoteSystemName = `thankEmote-${npcId}`
+          let thankEmoteElapsed = 0
+          engine.addSystem((dt: number) => {
+            if (!AvatarShape.has(npcEntity) || !Transform.has(npcEntity)) {
+              engine.removeSystem(thankEmoteSystemName)
+              return
+            }
+            
+            thankEmoteElapsed += dt * 1000
+            
+            if (thankEmoteElapsed >= 2000) {
+              // No modificar expressionTriggerId - simplemente dejar que termine naturalmente
+              engine.removeSystem(thankEmoteSystemName)
+            }
+          }, 0, thankEmoteSystemName)
+        }
+        
+        // Crear nuevo item para el NPC
+        const npcItemEntity = engine.addEntity()
+        
+        Transform.create(npcItemEntity, {
+          position: Vector3.create(0, 0, 0),
+          rotation: playerItemTransform?.rotation || Quaternion.Identity(),
+          scale: playerItemTransform?.scale || Vector3.create(1, 1, 1)
         })
-      }
-      
-      // Agregar el componente Material si existe
-      if (itemId && Material.has(playerItemEntity)) {
-        const material = Material.get(playerItemEntity)
-        if (material) {
-          Material.create(npcItemEntity, {
-            id: material.id
+        
+        // Cargar el modelo del item
+        if (itemModel) {
+          GltfContainer.create(npcItemEntity, {
+            src: itemModel,
+            visibleMeshesCollisionMask: 0,
+            invisibleMeshesCollisionMask: 0
           })
         }
+        
+        // Agregar el componente Material si existe
+        if (receivedItemType) {
+          Material.create(npcItemEntity, {
+            id: receivedItemType
+          })
+        }
+        
+        // Attachear a la mano derecha del NPC
+        if (AvatarShape.has(npcEntity)) {
+          AvatarAttach.create(npcItemEntity, {
+            avatarId: AvatarShape.get(npcEntity).id,
+            anchorPointId: AvatarAnchorPointType.AAPT_RIGHT_HAND
+          })
+        }
+        
+        // Guardar referencia al item en el componente NPCItem
+        NPCItem.create(npcEntity, {
+          itemEntity: npcItemEntity
+        })
+      } catch (error) {
+        console.error('Error en giveItemToNPC:', error)
+      } finally {
+        // Siempre enviar al NPC de vuelta, incluso si hay errores
+        sendNPCBack()
       }
-      
-      // Attachear a la mano derecha del NPC
-      AvatarAttach.create(npcItemEntity, {
-        avatarId: AvatarShape.get(npcEntity).id,
-        anchorPointId: AvatarAnchorPointType.AAPT_RIGHT_HAND
-      })
-      
-      // Guardar referencia al item en el componente NPCItem
-      NPCItem.create(npcEntity, {
-        itemEntity: npcItemEntity
-      })
-      
-      // Enviar al NPC de vuelta con el item
-      sendNPCBack()
     }
     
     const rotation = getRotationToTarget(startPos, spotPos)
@@ -493,55 +552,18 @@ export class NPCSpawner {
         // El jugador tiene un item, dárselo al NPC
         giveItemToNPC(npc, itemInfo.itemEntity, itemInfo.itemId)
       } else {
-        // El jugador no tiene item, enviar al NPC de vuelta
-        sendNPCBack()
+        // Si no hay item, mostrar mensaje en la UI
+        showUIMessage('You should have something to give')
       }
     }
     
-    // Usar PointerEvents para poder actualizar el hoverText dinámicamente
-    const pointerEventsComponent = PointerEvents.create(colliderEntity, {
-      pointerEvents: [
-        {
-          eventType: PointerEventType.PET_DOWN,
-          eventInfo: {
-            button: InputAction.IA_POINTER,
-            hoverText: 'Click to dismiss',
-            maxDistance: 2,
-            showFeedback: true
-          }
-        }
-      ]
-    })
-    
-    // Sistema para actualizar el hoverText dinámicamente (solo cuando cambia)
-    const hoverSystemName = `npcHover-${npcId}`
-    let lastItemState: boolean | null = null
-    engine.addSystem((dt: number) => {
-      if (!Transform.has(colliderEntity) || !PointerEvents.has(colliderEntity)) {
-        engine.removeSystem(hoverSystemName)
-        return
-      }
-      
-      const itemInfo = hasItemInRightHand()
-      const currentItemState = itemInfo.hasItem
-      
-      // Solo actualizar si el estado cambió
-      if (lastItemState !== currentItemState) {
-        lastItemState = currentItemState
-        const pointerEvents = PointerEvents.getMutable(colliderEntity)
-        
-        if (pointerEvents.pointerEvents && pointerEvents.pointerEvents.length > 0) {
-          const newHoverText = itemInfo.hasItem ? 'Give item' : 'Click to dismiss'
-          pointerEvents.pointerEvents[0]!.eventInfo!.hoverText = newHoverText || ''
-        }
-      }
-    }, 0, hoverSystemName)
-    
+    // Configurar interacción que siempre muestra "Give item"
     pointerEventsSystem.onPointerDown(
       {
         entity: colliderEntity,
         opts: {
           button: InputAction.IA_POINTER,
+          hoverText: 'Give item',
           maxDistance: 2
         }
       },

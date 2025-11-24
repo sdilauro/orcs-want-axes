@@ -1,6 +1,6 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
-import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, Billboard, BillboardMode, TriggerArea, triggerAreaEventsSystem } from '@dcl/sdk/ecs'
-import { Material } from './helpers'
+import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, Billboard, BillboardMode, AvatarShape } from '@dcl/sdk/ecs'
+import { Material, ItemType, getItemTypeFromModelPath } from './helpers'
 
 // Tipo para los datos de Transform
 type TransformData = {
@@ -16,20 +16,31 @@ const ProcessingStationSchema = {
   workDuration: Schemas.Number, // Duración del trabajo en segundos
   workProgress: Schemas.Number, // Progreso del trabajo (0 a 1)
   resultModel: Schemas.String, // Ruta del modelo resultante
-  neededItemId: Schemas.String, // ID del item necesario
-  playerInArea: Schemas.Boolean // Si el jugador está en el trigger area
+  neededItemId: Schemas.String // ID del item necesario
 }
 const ProcessingStationComponent = engine.defineComponent('ProcessingStation', ProcessingStationSchema)
 
 // Función helper para verificar si el jugador tiene un material específico attachado
 function hasMaterialAttached(materialId: string): { hasItem: boolean, itemEntity?: Entity } {
   try {
+    // Obtener todos los NPCs para excluirlos
+    const npcAvatarIds = new Set<string>()
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      // Los NPCs tienen name vacío, el jugador tiene un name
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
+      }
+    }
+    
     for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
       if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        if (Material.has(entity)) {
-          const item = Material.get(entity)
-          if (item && item.id === materialId) {
-            return { hasItem: true, itemEntity: entity }
+        // Solo considerar items del jugador, no de NPCs
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          if (Material.has(entity)) {
+            const item = Material.get(entity)
+            if (item && item.id === materialId) {
+              return { hasItem: true, itemEntity: entity }
+            }
           }
         }
       }
@@ -54,12 +65,13 @@ function removeRightHandItem() {
   }
 }
 
+
 export class ProcessingStation {
   private entity: Entity
-  private triggerAreaEntity: Entity
   private spinnerEntity!: Entity
   private workSystemName: string
   private showMessage?: (message: string) => void
+  private resultPosition: Vector3
 
   constructor(
     transform: TransformData,
@@ -67,7 +79,7 @@ export class ProcessingStation {
     workDuration: number,
     modelPathResult: string,
     neededItemId: string,
-    triggerArea: { position: Vector3, scale: Vector3 },
+    resultPosition: Vector3,
     showMessage?: (message: string) => void
   ) {
     // Crear la entidad
@@ -91,46 +103,19 @@ export class ProcessingStation {
     // Agregar collider para interacción
     MeshCollider.setBox(this.entity, ColliderLayer.CL_POINTER)
     
-    // Crear trigger area
-    this.triggerAreaEntity = engine.addEntity()
-    Transform.create(this.triggerAreaEntity, {
-      position: triggerArea.position,
-      scale: triggerArea.scale
-    })
-    TriggerArea.setBox(this.triggerAreaEntity)
-    
-    // Configurar eventos del trigger area
-    triggerAreaEventsSystem.onTriggerEnter(this.triggerAreaEntity, () => {
-      ProcessingStationComponent.getMutable(this.entity).playerInArea = true
-    })
-    
-    triggerAreaEventsSystem.onTriggerExit(this.triggerAreaEntity, () => {
-      const station = ProcessingStationComponent.getMutable(this.entity)
-      station.playerInArea = false
-      // Si estaba trabajando, cancelar
-      if (station.isWorking) {
-        station.isWorking = false
-        station.workProgress = 0
-        this.hideSpinner()
-        if (this.showMessage) {
-          this.showMessage('Processing cancelled - left area')
-        }
-      }
-    })
-    
     // Crear componente de estación
     ProcessingStationComponent.create(this.entity, {
       isWorking: false,
       workDuration: workDuration,
       workProgress: 0,
       resultModel: modelPathResult,
-      neededItemId: neededItemId,
-      playerInArea: false
+      neededItemId: neededItemId
     })
     
     // Crear nombre único para el sistema
     this.workSystemName = `processingStation-${this.entity}`
     this.showMessage = showMessage
+    this.resultPosition = resultPosition
     
     // Configurar interacción
     this.setupInteraction()
@@ -156,14 +141,6 @@ export class ProcessingStation {
 
   private handleInteraction() {
     const station = ProcessingStationComponent.get(this.entity)
-    
-    // Verificar si el jugador está en el área
-    if (!station.playerInArea) {
-      if (this.showMessage) {
-        this.showMessage('You must be in the processing area!')
-      }
-      return
-    }
     
     // Verificar si ya está trabajando
     if (station.isWorking) {
@@ -277,15 +254,6 @@ export class ProcessingStation {
       
       const mutableStation = ProcessingStationComponent.getMutable(this.entity)
       
-      // Verificar que el jugador siga en el área
-      if (!mutableStation.playerInArea) {
-        mutableStation.isWorking = false
-        mutableStation.workProgress = 0
-        this.hideSpinner()
-        engine.removeSystem(this.workSystemName)
-        return
-      }
-      
       // Actualizar progreso
       mutableStation.workProgress += dt / mutableStation.workDuration
       
@@ -311,25 +279,12 @@ export class ProcessingStation {
   }
 
   private attachResultToPlayer(modelPath: string) {
-    // Spawnea el resultado en el piso cerca de la estación
-    const stationTransform = Transform.get(this.entity)
-    const stationPos = stationTransform.position
-    
-    // Calcular posición aleatoria en un área cercana (radio de 2 metros)
-    const angle = Math.random() * Math.PI * 2
-    const radius = 1 + Math.random() * 1 // Entre 1 y 2 metros
-    const offsetX = Math.cos(angle) * radius
-    const offsetZ = Math.sin(angle) * radius
-    
+    // Spawnea el resultado en la posición especificada
     const resultEntity = engine.addEntity()
     
     Transform.create(resultEntity, {
-      position: Vector3.create(
-        stationPos.x + offsetX,
-        stationPos.y + 0.5, // 0.5 metros arriba del suelo
-        stationPos.z + offsetZ
-      ),
-      rotation: Quaternion.fromEulerDegrees(0, Math.random() * 360, 0),
+      position: this.resultPosition,
+      rotation: Quaternion.fromEulerDegrees(0, 0, 0),
       scale: Vector3.create(1, 1, 1)
     })
     
@@ -340,6 +295,12 @@ export class ProcessingStation {
     
     // Agregar collider para que pueda ser recogido
     MeshCollider.setBox(resultEntity, ColliderLayer.CL_POINTER)
+    
+    // Agregar componente Material con el tipo correcto
+    const itemType = getItemTypeFromModelPath(modelPath)
+    Material.create(resultEntity, {
+      id: itemType
+    })
     
     // Agregar interacción para attachear a la mano derecha
     pointerEventsSystem.onPointerDown(
@@ -361,10 +322,22 @@ export class ProcessingStation {
     // Verificar si el jugador ya tiene algo en la mano derecha
     let hasItem = false
     try {
+      // Obtener todos los NPCs para excluirlos
+      const npcAvatarIds = new Set<string>()
+      for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+        // Los NPCs tienen name vacío, el jugador tiene un name
+        if (avatarShape.name === '') {
+          npcAvatarIds.add(avatarShape.id)
+        }
+      }
+      
       for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
         if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-          hasItem = true
-          break
+          // Solo considerar items del jugador, no de NPCs
+          if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+            hasItem = true
+            break
+          }
         }
       }
     } catch (error) {
@@ -381,6 +354,18 @@ export class ProcessingStation {
     // Obtener el transform de la entidad antes de attachearla
     const itemTransform = Transform.get(itemEntity)
     const itemGltf = GltfContainer.get(itemEntity)
+    
+    // Obtener el tipo de item del componente Material si existe
+    let itemType: string = ItemType.HERB // fallback
+    if (Material.has(itemEntity)) {
+      const material = Material.get(itemEntity)
+      if (material) {
+        itemType = material.id
+      }
+    } else {
+      // Si no tiene componente Material, intentar determinarlo por el modelo
+      itemType = getItemTypeFromModelPath(itemGltf.src)
+    }
     
     // Remover la entidad del mundo
     engine.removeEntity(itemEntity)
@@ -402,6 +387,11 @@ export class ProcessingStation {
       invisibleMeshesCollisionMask: 0 // Sin colisiones invisibles
     })
     
+    // Agregar componente Material con el tipo correcto
+    Material.create(attachedEntity, {
+      id: itemType
+    })
+    
     // Attachear a la mano derecha del jugador
     AvatarAttach.create(attachedEntity, {
       anchorPointId: AvatarAnchorPointType.AAPT_RIGHT_HAND
@@ -417,7 +407,6 @@ export class ProcessingStation {
     engine.removeSystem(this.workSystemName)
     engine.removeSystem(`spinnerRotation-${this.entity}`)
     this.hideSpinner()
-    engine.removeEntity(this.triggerAreaEntity)
     engine.removeEntity(this.entity)
   }
 }

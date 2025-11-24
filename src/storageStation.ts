@@ -1,6 +1,6 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
-import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS } from '@dcl/sdk/ecs'
-import { Material, ItemType } from './helpers'
+import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, AvatarShape } from '@dcl/sdk/ecs'
+import { Material, ItemType, getItemModelAndScale } from './helpers'
 
 // Tipo para los datos de Transform
 type TransformData = {
@@ -13,9 +13,21 @@ type TransformData = {
 // Función helper para verificar si el jugador tiene algo attachado a la mano derecha
 function hasSomethingInRightHand(): boolean {
   try {
+    // Obtener todos los NPCs para excluirlos
+    const npcAvatarIds = new Set<string>()
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      // Los NPCs tienen name vacío, el jugador tiene un name
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
+      }
+    }
+    
     for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
       if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        return true
+        // Solo considerar items del jugador, no de NPCs
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          return true
+        }
       }
     }
   } catch (error) {
@@ -24,41 +36,20 @@ function hasSomethingInRightHand(): boolean {
   return false
 }
 
-// Función para attachar un cubo a la mano derecha con un id específico
-function attachCubeToRightHand(itemId: string) {
-  try {
-    // Crear entidad para el cubo
-    const cube = engine.addEntity()
-    
-    // Crear un cubo gris
-    MeshRenderer.setBox(cube)
-    MaterialECS.setPbrMaterial(cube, {
-      albedoColor: Color4.create(0.5, 0.5, 0.5, 1.0) // Gris
-    })
-    
-    // Agregar el componente Material con el id especificado
-    Material.create(cube, {
-      id: itemId
-    })
-    
-    // Attachear a la mano derecha del jugador
-    AvatarAttach.create(cube, {
-      anchorPointId: AvatarAnchorPointType.AAPT_RIGHT_HAND
-    })
-  } catch (error) {
-    console.error('Error en attachCubeToRightHand:', error)
-  }
-}
 
 export class StorageStation {
   private entity: Entity
   private resourceType: ItemType
   private showMessage?: (message: string) => void
+  private resultPosition: Vector3
+  private currentItemEntity: Entity | null = null
+  private pickupSystemName: string
 
   constructor(
     transform: TransformData,
     modelPath: string,
     resourceType: ItemType,
+    resultPosition: Vector3,
     showMessage?: (message: string) => void
   ) {
     // Crear la entidad
@@ -78,6 +69,8 @@ export class StorageStation {
     // Guardar tipo de recurso y callback
     this.resourceType = resourceType
     this.showMessage = showMessage
+    this.resultPosition = resultPosition
+    this.pickupSystemName = `storagePickup-${this.entity}`
     
     // Configurar interacción
     this.setupInteraction()
@@ -93,7 +86,7 @@ export class StorageStation {
         opts: {
           button: InputAction.IA_POINTER,
           hoverText: `Take ${resourceTypeName}`,
-          maxDistance: 2
+          maxDistance: 1.5
         }
       },
       () => {
@@ -132,12 +125,145 @@ export class StorageStation {
       return
     }
     
-    // Attachear el material a la mano derecha
-    attachCubeToRightHand(this.resourceType)
+    // Si ya hay un item en el piso, no crear otro
+    if (this.currentItemEntity && Transform.has(this.currentItemEntity)) {
+      return
+    }
+    
+    // Crear el item en el piso
+    this.spawnItemOnFloor()
     
     const resourceTypeName = this.getResourceTypeName()
     if (this.showMessage) {
-      this.showMessage(`Took ${resourceTypeName}`)
+      this.showMessage(`${resourceTypeName} created`)
+    }
+  }
+
+  private spawnItemOnFloor() {
+    const { modelPath, scale } = getItemModelAndScale(this.resourceType)
+    
+    if (!modelPath) {
+      console.error(`No model path for item type: ${this.resourceType}`)
+      return
+    }
+    
+    // Crear entidad del item
+    this.currentItemEntity = engine.addEntity()
+    
+    Transform.create(this.currentItemEntity, {
+      position: this.resultPosition,
+      rotation: Quaternion.fromEulerDegrees(0, 0, 0),
+      scale: scale
+    })
+    
+    // Cargar el modelo
+    GltfContainer.create(this.currentItemEntity, {
+      src: modelPath
+    })
+    
+    // Agregar collider
+    MeshCollider.setBox(this.currentItemEntity, ColliderLayer.CL_POINTER)
+    
+    // Agregar componente Material
+    Material.create(this.currentItemEntity, {
+      id: this.resourceType
+    })
+    
+    // Iniciar sistema de recogida automática
+    this.startAutoPickupSystem()
+  }
+
+  private startAutoPickupSystem() {
+    // Remover sistema anterior si existe
+    try {
+      engine.removeSystem(this.pickupSystemName)
+    } catch (e) {
+      // El sistema no existe, está bien
+    }
+    
+    engine.addSystem((dt: number) => {
+      // Si el item ya no existe, remover el sistema
+      if (!this.currentItemEntity || !Transform.has(this.currentItemEntity)) {
+        engine.removeSystem(this.pickupSystemName)
+        this.currentItemEntity = null
+        return
+      }
+      
+      // Verificar si el jugador tiene las manos vacías
+      if (hasSomethingInRightHand()) {
+        return
+      }
+      
+      // Obtener posición del jugador
+      let playerPosition: Vector3 | null = null
+      try {
+        // Intentar obtener la posición del jugador desde engine.PlayerEntity
+        if (Transform.has(engine.PlayerEntity)) {
+          playerPosition = Transform.get(engine.PlayerEntity).position
+        }
+      } catch (e) {
+        // Si no se puede obtener, salir
+        return
+      }
+      
+      if (!playerPosition) {
+        return
+      }
+      
+      // Obtener posición del item
+      const itemPosition = Transform.get(this.currentItemEntity).position
+      
+      // Calcular distancia
+      const distance = Vector3.distance(playerPosition, itemPosition)
+      
+      // Si el jugador está cerca (menos de 1.5 metros), recoger automáticamente
+      if (distance < 1.5) {
+        this.pickupItem(this.currentItemEntity)
+        engine.removeSystem(this.pickupSystemName)
+        this.currentItemEntity = null
+      }
+    }, 0, this.pickupSystemName)
+  }
+
+  private pickupItem(itemEntity: Entity) {
+    // Obtener información del item
+    const itemTransform = Transform.get(itemEntity)
+    const itemGltf = GltfContainer.get(itemEntity)
+    const { scale } = getItemModelAndScale(this.resourceType)
+    
+    // Remover la entidad del mundo
+    engine.removeEntity(itemEntity)
+    
+    // Crear una nueva entidad para attachear
+    const attachedEntity = engine.addEntity()
+    
+    // Copiar el transform
+    Transform.create(attachedEntity, {
+      position: Vector3.create(0, 0, 0),
+      rotation: itemTransform.rotation,
+      scale: scale
+    })
+    
+    // Cargar el mismo modelo
+    GltfContainer.create(attachedEntity, {
+      src: itemGltf.src,
+      visibleMeshesCollisionMask: 0,
+      invisibleMeshesCollisionMask: 0
+    })
+    
+    // Agregar componente Material
+    Material.create(attachedEntity, {
+      id: this.resourceType
+    })
+    
+    // Attachear a la mano derecha del jugador
+    AvatarAttach.create(attachedEntity, {
+      anchorPointId: AvatarAnchorPointType.AAPT_RIGHT_HAND
+    })
+    
+    const resourceTypeName = this.getResourceTypeName()
+    if (this.showMessage) {
+      this.showMessage(`Picked up ${resourceTypeName}`)
     }
   }
 
@@ -151,6 +277,10 @@ export class StorageStation {
 
   // Método para destruir la estación
   public destroy() {
+    engine.removeSystem(this.pickupSystemName)
+    if (this.currentItemEntity && Transform.has(this.currentItemEntity)) {
+      engine.removeEntity(this.currentItemEntity)
+    }
     engine.removeEntity(this.entity)
   }
 }
