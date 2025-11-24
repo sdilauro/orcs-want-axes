@@ -1,9 +1,9 @@
 import { Vector3, Quaternion } from '@dcl/sdk/math'
-import { engine, Transform, VirtualCamera, MainCamera, TriggerArea, triggerAreaEventsSystem, Schemas, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, AvatarAttach, AvatarAnchorPointType } from '@dcl/sdk/ecs'
+import { engine, Transform, VirtualCamera, MainCamera, TriggerArea, triggerAreaEventsSystem, Schemas, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, AvatarAttach, AvatarAnchorPointType, Entity, AvatarShape } from '@dcl/sdk/ecs'
 import { CraftingStation } from './craftingStation'
 import { ProcessingStation } from './processingStation'
 import { StorageStation } from './storageStation'
-import { setMessage, getMessage, clearMessage } from './ui'
+import { setMessage, getMessage, clearMessage, setGameOverState, resetCounters, hidePlayAgainButton, isGameOverActive } from './ui'
 
 // Función para configurar la cámara cinematográfica
 export function setupCinematicCamera() {
@@ -101,7 +101,7 @@ export function clearUIMessage() {
 export function createWorkStations() {
   // ProcessingStation 1: Cauldron (Caldero)
   // Requiere Herb, devuelve Cup al piso
-  new ProcessingStation(
+  const cauldron = new ProcessingStation(
     {
       position: Vector3.create(3, 0, 12), // Posición del caldero
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
@@ -114,10 +114,11 @@ export function createWorkStations() {
     Vector3.create(4, 0, 11), // resultPosition - posición donde se crea el item resultante
     showUIMessage
   )
+  processingStations.push(cauldron)
 
   // ProcessingStation 2: Stove
   // Requiere Ore, devuelve Iron al piso
-  new ProcessingStation(
+  const stove = new ProcessingStation(
     {
       position: Vector3.create(13, 0, 12),
       rotation: Quaternion.fromEulerDegrees(0, 240, 0),
@@ -130,10 +131,11 @@ export function createWorkStations() {
     Vector3.create(12, 0, 11), // resultPosition - posición donde se crea el item resultante
     showUIMessage
   )
+  processingStations.push(stove)
 
   // CraftingStation 1: Anvil (Yunque)
   // Requiere Iron, elimina Iron y attachea Axe
-  new CraftingStation(
+  const anvil = new CraftingStation(
     {
       position: Vector3.create(10, 0, 10),
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
@@ -149,10 +151,11 @@ export function createWorkStations() {
     },
     showUIMessage
   )
+  craftingStations.push(anvil)
 
   // CraftingStation 2: Potion Table (Mesa de Poción)
   // Requiere Cup, elimina Cup y attachea Potion
-  new CraftingStation(
+  const potionTable = new CraftingStation(
     {
       position: Vector3.create(6, 0, 10),
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
@@ -168,12 +171,13 @@ export function createWorkStations() {
     },
     showUIMessage
   )
+  craftingStations.push(potionTable)
 }
 
 // Función para crear las StorageStations
 export function createStorageStations() {
   // StorageStation al lado del caldero - entrega Herb (cofre de madera)
-  new StorageStation(
+  const herbStorage = new StorageStation(
     {
       position: Vector3.create(2.5, 0, 11), // Al lado izquierdo del bucket (bucket está en 5, 0, 10)
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
@@ -184,9 +188,10 @@ export function createStorageStations() {
     Vector3.create(2.5, 0, 10), // resultPosition - posición donde se crea el item resultante
     showUIMessage
   )
+  storageStations.push(herbStorage)
 
   // StorageStation al lado del stove - entrega Ore
-  new StorageStation(
+  const oreStorage = new StorageStation(
     {
       position: Vector3.create(13, 0, 11), // Al lado izquierdo del stove (stove está en 13, 0, 12)
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
@@ -197,6 +202,7 @@ export function createStorageStations() {
     Vector3.create(13, 0, 10), // resultPosition - posición donde se crea el item resultante
     showUIMessage
   )
+  storageStations.push(oreStorage)
 }
 
 // Componente para identificar materiales attachados - Definido fuera de main() para evitar errores de "Engine sealed"
@@ -260,6 +266,11 @@ export function createDiscardStation() {
       }
     },
     () => {
+      // Verificar si el juego está en estado de game over
+      if (isGameOverActive()) {
+        return
+      }
+      
       const removed = removeRightHandItem()
       if (removed) {
         showUIMessage('Item discarded')
@@ -363,22 +374,188 @@ export function getItemTypeFromModelPath(modelPath: string): ItemType {
   return ItemType.HERB // fallback
 }
 
+// Variable para almacenar la referencia de la entidad gameOver
+let gameOverEntity: Entity | null = null
+
+// Variable para almacenar la referencia del NPCSpawner
+let npcSpawnerInstance: any = null
+
+// Arrays para almacenar referencias a las estaciones
+let processingStations: ProcessingStation[] = []
+let craftingStations: CraftingStation[] = []
+let storageStations: StorageStation[] = []
+
+// Función para establecer la referencia del NPCSpawner
+export function setNPCSpawnerInstance(spawner: any) {
+  npcSpawnerInstance = spawner
+}
+
+// Función para eliminar todos los items (del piso y attachados al jugador)
+function removeAllItems() {
+  try {
+    // Obtener todos los NPCs para excluir sus items
+    const npcAvatarIds = new Set<string>()
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
+      }
+    }
+    
+    const itemsToRemove: Entity[] = []
+    
+    // Encontrar todos los items con Material component
+    for (const [entity, material] of engine.getEntitiesWith(Material)) {
+      // Verificar si está attachado a un NPC
+      let isNPCItem = false
+      
+      if (AvatarAttach.has(entity)) {
+        const avatarAttach = AvatarAttach.get(entity)
+        // Si tiene avatarId y es de un NPC, no eliminarlo (es item del NPC)
+        if (avatarAttach.avatarId && npcAvatarIds.has(avatarAttach.avatarId)) {
+          isNPCItem = true
+        }
+      }
+      
+      // Si NO es item de NPC, agregarlo a la lista para eliminar (incluye items del jugador y del piso)
+      if (!isNPCItem) {
+        itemsToRemove.push(entity)
+      }
+    }
+    
+    // Eliminar todos los items encontrados
+    for (const itemEntity of itemsToRemove) {
+      try {
+        engine.removeEntity(itemEntity)
+      } catch (error) {
+        console.error('Error al eliminar item:', error)
+      }
+    }
+  } catch (error) {
+    console.error('Error en removeAllItems:', error)
+  }
+}
+
+// Función para reiniciar todas las estaciones
+function resetAllStations() {
+  // Reiniciar ProcessingStations
+  for (const station of processingStations) {
+    if (station && typeof station.reset === 'function') {
+      station.reset()
+    }
+  }
+  
+  // Reiniciar CraftingStations
+  for (const station of craftingStations) {
+    if (station && typeof station.reset === 'function') {
+      station.reset()
+    }
+  }
+  
+  // Reiniciar StorageStations
+  for (const station of storageStations) {
+    if (station && typeof station.reset === 'function') {
+      station.reset()
+    }
+  }
+}
+
 // Función para mostrar el game over
 export function gameOver() {
+  // Ocultar mensajes de UI
+  clearUIMessage()
+  
+  // Detener el spawning de NPCs
+  if (npcSpawnerInstance && typeof npcSpawnerInstance.stopSpawning === 'function') {
+    npcSpawnerInstance.stopSpawning()
+  }
+  
+  // Eliminar todos los NPCs inmediatamente
+  if (npcSpawnerInstance && typeof npcSpawnerInstance.removeAllNPCs === 'function') {
+    npcSpawnerInstance.removeAllNPCs()
+  } else {
+    // Fallback: eliminar NPCs manualmente
+    removeAllNPCs()
+  }
+  
+  // Eliminar todos los items (del piso y attachados al jugador)
+  removeAllItems()
+  
+  // Reiniciar todas las estaciones
+  resetAllStations()
+  
   // Crear entidad para el game over
-  const gameOverEntity = engine.addEntity()
+  gameOverEntity = engine.addEntity()
   
   // Configurar transform con posición (8, 2, 10) y escala (2, 2, 1)
   Transform.create(gameOverEntity, {
-    position: Vector3.create(8, 2, 10),
-    rotation: Quaternion.fromEulerDegrees(0, 0, 0),
-    scale: Vector3.create(2, 2, 1)
+    position: Vector3.create(8, 1, 10),
+    rotation: Quaternion.fromEulerDegrees(22.5, 0, 0),
+    scale: Vector3.create(1.5, 1.5, 1)
   })
   
   // Cargar el modelo de game over
   GltfContainer.create(gameOverEntity, {
-    src: 'asset-packs/game_over/gameover2.glb'
+    src: 'assets/asset-packs/game_over/gameover2.glb'
   })
   
+  // Establecer el estado de game over en la UI
+  setGameOverState(true)
+  
   // Aquí se pueden agregar más efectos en el futuro
+}
+
+// Función para resetear el juego
+export function resetGame() {
+  // Resetear contadores
+  resetCounters()
+  
+  // Eliminar la entidad del game over
+  if (gameOverEntity !== null) {
+    try {
+      engine.removeEntity(gameOverEntity)
+    } catch (error) {
+      console.error('Error al eliminar gameOverEntity:', error)
+    }
+    gameOverEntity = null
+  }
+  
+  // Ocultar el botón Play Again y resetear el estado de game over
+  hidePlayAgainButton()
+  setGameOverState(false)
+  
+  // Reiniciar el spawning de NPCs (esto también eliminará NPCs existentes y reseteará el estado)
+  if (npcSpawnerInstance && typeof npcSpawnerInstance.restartSpawning === 'function') {
+    npcSpawnerInstance.restartSpawning()
+  } else {
+    // Fallback: eliminar NPCs manualmente
+    removeAllNPCs()
+  }
+  
+  // Limpiar mensaje de UI
+  clearUIMessage()
+}
+
+// Función helper para eliminar todos los NPCs (los NPCs tienen name vacío en AvatarShape)
+function removeAllNPCs() {
+  try {
+    const npcsToRemove: Entity[] = []
+    
+    // Encontrar todos los NPCs (tienen name vacío)
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      if (avatarShape.name === '') {
+        npcsToRemove.push(entity)
+      }
+    }
+    
+    // Eliminar todos los NPCs encontrados
+    for (const npcEntity of npcsToRemove) {
+      try {
+        engine.removeEntity(npcEntity)
+      } catch (error) {
+        console.error('Error al eliminar NPC:', error)
+      }
+    }
+  } catch (error) {
+    console.error('Error en removeAllNPCs:', error)
+  }
 }

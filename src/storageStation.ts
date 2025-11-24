@@ -1,6 +1,7 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, AvatarShape } from '@dcl/sdk/ecs'
 import { Material, ItemType, getItemModelAndScale } from './helpers'
+import { isGameOverActive } from './ui'
 
 // Tipo para los datos de Transform
 type TransformData = {
@@ -117,6 +118,11 @@ export class StorageStation {
   }
 
   private handleInteraction() {
+    // Verificar si el juego está en estado de game over
+    if (isGameOverActive()) {
+      return
+    }
+    
     // Verificar si el jugador ya tiene algo en la mano derecha
     if (hasSomethingInRightHand()) {
       if (this.showMessage) {
@@ -282,6 +288,22 @@ export class StorageStation {
       engine.removeEntity(this.currentItemEntity)
     }
     engine.removeEntity(this.entity)
+  }
+
+  // Método para reiniciar la estación
+  public reset() {
+    // Eliminar el item actual del piso si existe
+    if (this.currentItemEntity && Transform.has(this.currentItemEntity)) {
+      engine.removeEntity(this.currentItemEntity)
+      this.currentItemEntity = null
+    }
+    
+    // Eliminar sistema de pickup
+    try {
+      engine.removeSystem(this.pickupSystemName)
+    } catch (e) {
+      // El sistema no existe, está bien
+    }
   }
 }
 

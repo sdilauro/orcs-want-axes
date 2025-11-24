@@ -1,6 +1,7 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, Billboard, BillboardMode, AvatarShape } from '@dcl/sdk/ecs'
 import { Material, ItemType, getItemTypeFromModelPath } from './helpers'
+import { isGameOverActive } from './ui'
 
 // Tipo para los datos de Transform
 type TransformData = {
@@ -140,6 +141,11 @@ export class ProcessingStation {
   }
 
   private handleInteraction() {
+    // Verificar si el juego está en estado de game over
+    if (isGameOverActive()) {
+      return
+    }
+    
     const station = ProcessingStationComponent.get(this.entity)
     
     // Verificar si ya está trabajando
@@ -408,6 +414,26 @@ export class ProcessingStation {
     engine.removeSystem(`spinnerRotation-${this.entity}`)
     this.hideSpinner()
     engine.removeEntity(this.entity)
+  }
+
+  // Método para reiniciar la estación
+  public reset() {
+    // Detener el trabajo si está en progreso
+    if (ProcessingStationComponent.has(this.entity)) {
+      const station = ProcessingStationComponent.getMutable(this.entity)
+      station.isWorking = false
+      station.workProgress = 0
+    }
+    
+    // Ocultar spinner si existe
+    this.hideSpinner()
+    
+    // Eliminar sistema de trabajo
+    try {
+      engine.removeSystem(this.workSystemName)
+    } catch (e) {
+      // El sistema no existe, está bien
+    }
   }
 }
 

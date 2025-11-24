@@ -1,7 +1,7 @@
 import { Vector3, Quaternion, Color3, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, AvatarShape, Tween, EasingFunction, pointerEventsSystem, InputAction, MeshCollider, ColliderLayer, Billboard, BillboardMode, MeshRenderer, Material as MaterialECS, Schemas, AvatarAttach, AvatarAnchorPointType, GltfContainer } from '@dcl/sdk/ecs'
 import { Material, showUIMessage, ItemType, clearUIMessage } from './helpers'
-import { incrementGoodDelivered, incrementBadDelivered, incrementWrongItemDelivered } from './ui'
+import { incrementGoodDelivered, incrementBadDelivered, isGameOverActive } from './ui'
 
 // Tipo para un spot
 type Spot = {
@@ -179,6 +179,8 @@ export class NPCSpawner {
   private spawnInterval: number = 2000 // 2 segundos entre cada NPC
   private systemName: string
   private speed: number = 1.2 // metros por segundo
+  private activeNPCs: Entity[] = [] // Array para almacenar referencias de NPCs activos
+  private isSpawning: boolean = true // Flag para controlar si el spawning está activo
 
   constructor(
     spawnInterval: number = 2000,
@@ -226,6 +228,8 @@ export class NPCSpawner {
     this.occupySpot(spotId)
     
     const npc = engine.addEntity()
+    // Agregar a la lista de NPCs activos
+    this.activeNPCs.push(npc)
     const startPos = this.getClosestOrigin(spotPos)
     
     // Seleccionar aleatoriamente entre elfo u orco
@@ -393,6 +397,7 @@ export class NPCSpawner {
             }
             
             // Eliminar el NPC
+            this.removeNPCFromList(npc)
             engine.removeEntity(npc)
             engine.removeSystem(returnSystemName)
           }
@@ -407,6 +412,11 @@ export class NPCSpawner {
     
     // Función para dar un item al NPC
     const giveItemToNPC = (npcEntity: Entity, playerItemEntity: Entity, itemId?: string) => {
+      // Verificar si el juego está en estado de game over
+      if (isGameOverActive()) {
+        return
+      }
+      
       try {
         // Determinar el tipo de item recibido
         let receivedItemType: string | undefined = itemId
@@ -451,7 +461,6 @@ export class NPCSpawner {
           incrementGoodDelivered()
         } else {
           incrementBadDelivered()
-          incrementWrongItemDelivered()
           showUIMessage('Wrong item')
         }
         
@@ -714,6 +723,11 @@ export class NPCSpawner {
 
   private startSpawning() {
     engine.addSystem((dt: number) => {
+      // Solo spawnear si está activo
+      if (!this.isSpawning) {
+        return
+      }
+      
       this.elapsedTime += dt * 1000
       
       if (this.elapsedTime >= this.npcIndex * this.spawnInterval) {
@@ -729,6 +743,50 @@ export class NPCSpawner {
 
   public destroy() {
     engine.removeSystem(this.systemName)
+  }
+
+  // Método helper para remover un NPC de la lista
+  private removeNPCFromList(npc: Entity) {
+    const index = this.activeNPCs.indexOf(npc)
+    if (index > -1) {
+      this.activeNPCs.splice(index, 1)
+    }
+  }
+
+  // Método para eliminar todos los NPCs
+  public removeAllNPCs() {
+    // Liberar todos los spots
+    for (const spot of this.spots) {
+      spot.occupied = false
+    }
+    
+    // Eliminar todos los NPCs de la lista
+    for (const npc of this.activeNPCs) {
+      try {
+        engine.removeEntity(npc)
+      } catch (error) {
+        console.error('Error al eliminar NPC:', error)
+      }
+    }
+    
+    // Limpiar la lista
+    this.activeNPCs = []
+  }
+
+  // Método para detener el spawning
+  public stopSpawning() {
+    this.isSpawning = false
+  }
+
+  // Método para reiniciar el spawning
+  public restartSpawning() {
+    this.isSpawning = true
+    this.npcIndex = 0
+    this.elapsedTime = 0
+    // Liberar todos los spots
+    for (const spot of this.spots) {
+      spot.occupied = false
+    }
   }
 }
 
