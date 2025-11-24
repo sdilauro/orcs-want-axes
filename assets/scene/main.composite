@@ -825,69 +825,6 @@
             "parent": 0
           }
         },
-        "555": {
-          "json": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "parent": 556
-          }
-        },
-        "556": {
-          "json": {
-            "position": {
-              "x": 6.210000038146973,
-              "y": 1.4510257244110107,
-              "z": 13.979999542236328
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": -0.28166332840919495,
-              "z": 0,
-              "w": 0.9595133066177368
-            },
-            "parent": 0
-          }
-        },
-        "557": {
-          "json": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "parent": 559
-          }
-        },
         "558": {
           "json": {
             "position": {
@@ -907,69 +844,6 @@
               "w": 0
             },
             "parent": 512
-          }
-        },
-        "559": {
-          "json": {
-            "position": {
-              "x": 8.24289321899414,
-              "y": 1.4510257244110107,
-              "z": 13.979999542236328
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": -0.28166332840919495,
-              "z": 0,
-              "w": 0.9595133066177368
-            },
-            "parent": 0
-          }
-        },
-        "560": {
-          "json": {
-            "position": {
-              "x": 0,
-              "y": 0,
-              "z": 0
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": 0,
-              "z": 0,
-              "w": 1
-            },
-            "parent": 561
-          }
-        },
-        "561": {
-          "json": {
-            "position": {
-              "x": 10.161820411682129,
-              "y": 1.4510257244110107,
-              "z": 13.979999542236328
-            },
-            "scale": {
-              "x": 1,
-              "y": 1,
-              "z": 1
-            },
-            "rotation": {
-              "x": 0,
-              "y": -0.28166332840919495,
-              "z": 0,
-              "w": 0.9595133066177368
-            },
-            "parent": 0
           }
         },
         "564": {
@@ -1035,24 +909,6 @@
             "networkId": 0,
             "entityId": 8007
           }
-        },
-        "555": {
-          "json": {
-            "networkId": 0,
-            "entityId": 8008
-          }
-        },
-        "557": {
-          "json": {
-            "networkId": 0,
-            "entityId": 8009
-          }
-        },
-        "560": {
-          "json": {
-            "networkId": 0,
-            "entityId": 8010
-          }
         }
       }
     },
@@ -1066,63 +922,6 @@
       },
       "data": {
         "0": {
-          "json": {
-            "states": []
-          }
-        },
-        "555": {
-          "json": {
-            "states": [
-              {
-                "clip": "Animation",
-                "playing": false,
-                "weight": 1,
-                "speed": 1,
-                "loop": true,
-                "shouldReset": false
-              }
-            ]
-          }
-        },
-        "556": {
-          "json": {
-            "states": []
-          }
-        },
-        "557": {
-          "json": {
-            "states": [
-              {
-                "clip": "Animation",
-                "playing": false,
-                "weight": 1,
-                "speed": 1,
-                "loop": true,
-                "shouldReset": false
-              }
-            ]
-          }
-        },
-        "559": {
-          "json": {
-            "states": []
-          }
-        },
-        "560": {
-          "json": {
-            "states": [
-              {
-                "clip": "Animation",
-                "playing": false,
-                "weight": 1,
-                "speed": 1,
-                "loop": true,
-                "shouldReset": false
-              }
-            ]
-          }
-        },
-        "561": {
           "json": {
             "states": []
           }
@@ -1327,53 +1126,11 @@
             "invisibleMeshesCollisionMask": 0
           }
         },
-        "555": {
-          "json": {
-            "src": "assets/asset-packs/confetti/confetti.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 0
-          }
-        },
-        "556": {
-          "json": {
-            "src": "assets/asset-packs/confetti/confettiarrow.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 0
-          }
-        },
-        "557": {
-          "json": {
-            "src": "assets/asset-packs/confetti/confetti.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 0
-          }
-        },
         "558": {
           "json": {
             "src": "assets/asset-packs/drawers/Furnit 2.glb",
             "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 3
-          }
-        },
-        "559": {
-          "json": {
-            "src": "assets/asset-packs/confetti/confettiarrow.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 0
-          }
-        },
-        "560": {
-          "json": {
-            "src": "assets/asset-packs/confetti/confetti.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 0
-          }
-        },
-        "561": {
-          "json": {
-            "src": "assets/asset-packs/confetti/confettiarrow.glb",
-            "visibleMeshesCollisionMask": 0,
-            "invisibleMeshesCollisionMask": 0
           }
         },
         "564": {
@@ -1822,39 +1579,9 @@
             "value": "Invisible Wall_3"
           }
         },
-        "555": {
-          "json": {
-            "value": "confetti"
-          }
-        },
-        "556": {
-          "json": {
-            "value": "confetti_2"
-          }
-        },
-        "557": {
-          "json": {
-            "value": "confetti_3"
-          }
-        },
         "558": {
           "json": {
             "value": "Drawers_2_3"
-          }
-        },
-        "559": {
-          "json": {
-            "value": "confetti_2_3"
-          }
-        },
-        "560": {
-          "json": {
-            "value": "confetti_3_4"
-          }
-        },
-        "561": {
-          "json": {
-            "value": "confetti_2_3_4"
           }
         },
         "564": {
@@ -1908,33 +1635,6 @@
               1041
             ]
           }
-        },
-        "555": {
-          "json": {
-            "componentIds": [
-              1042,
-              1081,
-              1020
-            ]
-          }
-        },
-        "557": {
-          "json": {
-            "componentIds": [
-              1042,
-              1081,
-              1020
-            ]
-          }
-        },
-        "560": {
-          "json": {
-            "componentIds": [
-              1042,
-              1081,
-              1020
-            ]
-          }
         }
       }
     },
@@ -1963,36 +1663,6 @@
           }
         },
         "554": {
-          "json": {
-            "visible": false
-          }
-        },
-        "555": {
-          "json": {
-            "visible": false
-          }
-        },
-        "556": {
-          "json": {
-            "visible": false
-          }
-        },
-        "557": {
-          "json": {
-            "visible": false
-          }
-        },
-        "559": {
-          "json": {
-            "visible": false
-          }
-        },
-        "560": {
-          "json": {
-            "visible": false
-          }
-        },
-        "561": {
           "json": {
             "visible": false
           }
@@ -2047,7 +1717,7 @@
         "serializationType": "map"
       },
       "data": {
-        "0": {
+        "564": {
           "json": {
             "gizmo": 0
           }
@@ -2503,9 +2173,6 @@
                   523,
                   524,
                   554,
-                  556,
-                  559,
-                  561,
                   564
                 ]
               },
@@ -2565,7 +2232,6 @@
               },
               {
                 "entity": 522,
-                "open": true,
                 "children": [
                   517,
                   518,
@@ -2574,7 +2240,6 @@
               },
               {
                 "entity": 526,
-                "open": true,
                 "children": [
                   527,
                   528
@@ -2610,7 +2275,6 @@
               },
               {
                 "entity": 546,
-                "open": true,
                 "children": [
                   538,
                   541,
@@ -2689,37 +2353,6 @@
               },
               {
                 "entity": 554,
-                "children": []
-              },
-              {
-                "entity": 555,
-                "children": []
-              },
-              {
-                "entity": 556,
-                "children": [
-                  555
-                ]
-              },
-              {
-                "entity": 559,
-                "open": true,
-                "children": [
-                  557
-                ]
-              },
-              {
-                "entity": 557,
-                "children": []
-              },
-              {
-                "entity": 561,
-                "children": [
-                  560
-                ]
-              },
-              {
-                "entity": 560,
                 "children": []
               },
               {
@@ -3009,138 +2642,6 @@
         "serializationType": "map"
       },
       "data": {
-        "555": {
-          "json": {
-            "id": 10,
-            "value": [
-              {
-                "name": "Play animation",
-                "type": "play_animation",
-                "jsonPayload": "{\"animation\":\"Animation\"}"
-              },
-              {
-                "name": "Reset",
-                "type": "stop_animation",
-                "jsonPayload": "{}"
-              },
-              {
-                "name": "Play sound",
-                "type": "play_sound",
-                "jsonPayload": "{\"src\":\"assets/asset-packs/confetti/fireworkexplode.mp3\"}"
-              },
-              {
-                "name": "Show",
-                "type": "set_visibility",
-                "jsonPayload": "{\"visible\":true,\"collider\":0}"
-              },
-              {
-                "name": "Hide",
-                "type": "set_visibility",
-                "jsonPayload": "{\"visible\":false,\"collider\":0}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Explode",
-                "type": "batch",
-                "jsonPayload": "{\"actions\":[\"Play animation\",\"Play sound\",\"Show\",\"Delay Hide\"]}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Delay Hide",
-                "type": "start_delay",
-                "jsonPayload": "{\"actions\":[\"Hide\"],\"timeout\":10}"
-              }
-            ]
-          }
-        },
-        "557": {
-          "json": {
-            "id": 11,
-            "value": [
-              {
-                "name": "Play animation",
-                "type": "play_animation",
-                "jsonPayload": "{\"animation\":\"Animation\"}"
-              },
-              {
-                "name": "Reset",
-                "type": "stop_animation",
-                "jsonPayload": "{}"
-              },
-              {
-                "name": "Play sound",
-                "type": "play_sound",
-                "jsonPayload": "{\"src\":\"assets/asset-packs/confetti/fireworkexplode.mp3\"}"
-              },
-              {
-                "name": "Show",
-                "type": "set_visibility",
-                "jsonPayload": "{\"visible\":true,\"collider\":0}"
-              },
-              {
-                "name": "Hide",
-                "type": "set_visibility",
-                "jsonPayload": "{\"visible\":false,\"collider\":0}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Explode",
-                "type": "batch",
-                "jsonPayload": "{\"actions\":[\"Play animation\",\"Play sound\",\"Show\",\"Delay Hide\"]}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Delay Hide",
-                "type": "start_delay",
-                "jsonPayload": "{\"actions\":[\"Hide\"],\"timeout\":10}"
-              }
-            ]
-          }
-        },
-        "560": {
-          "json": {
-            "id": 12,
-            "value": [
-              {
-                "name": "Play animation",
-                "type": "play_animation",
-                "jsonPayload": "{\"animation\":\"Animation\"}"
-              },
-              {
-                "name": "Reset",
-                "type": "stop_animation",
-                "jsonPayload": "{}"
-              },
-              {
-                "name": "Play sound",
-                "type": "play_sound",
-                "jsonPayload": "{\"src\":\"assets/asset-packs/confetti/fireworkexplode.mp3\"}"
-              },
-              {
-                "name": "Show",
-                "type": "set_visibility",
-                "jsonPayload": "{\"visible\":true,\"collider\":0}"
-              },
-              {
-                "name": "Hide",
-                "type": "set_visibility",
-                "jsonPayload": "{\"visible\":false,\"collider\":0}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Explode",
-                "type": "batch",
-                "jsonPayload": "{\"actions\":[\"Play animation\",\"Play sound\",\"Show\",\"Delay Hide\"]}",
-                "allowedInBasicView": true
-              },
-              {
-                "name": "Delay Hide",
-                "type": "start_delay",
-                "jsonPayload": "{\"actions\":[\"Hide\"],\"timeout\":10}"
-              }
-            ]
-          }
-        },
         "564": {
           "json": {
             "id": 15,
@@ -3154,7 +2655,7 @@
               {
                 "name": "Loop",
                 "type": "play_sound",
-                "jsonPayload": "{\"loop\":true,\"src\":\"assets/asset-packs/ambient_music_-_medieval_2/medieval_2.mp3\",\"global\":true}",
+                "jsonPayload": "{\"loop\":true,\"src\":\"assets/asset-packs/ambient_music_-_medieval_2/medieval_2.mp3\",\"global\":true,\"volume\":0.06}",
                 "allowedInBasicView": true,
                 "basicViewId": "loop-sound"
               },
@@ -3502,19 +3003,7 @@
         "554": {
           "json": {}
         },
-        "556": {
-          "json": {}
-        },
-        "557": {
-          "json": {}
-        },
         "558": {
-          "json": {}
-        },
-        "559": {
-          "json": {}
-        },
-        "561": {
           "json": {}
         },
         "564": {
@@ -4106,54 +3595,6 @@
         "serializationType": "map"
       },
       "data": {
-        "555": {
-          "json": {
-            "isBasicViewEnabled": true,
-            "componentName": "Confetti",
-            "fields": [],
-            "assetId": "39a19351-c101-4401-8a82-bbd809bc1299"
-          }
-        },
-        "556": {
-          "json": {
-            "isBasicViewEnabled": true,
-            "componentName": "Confetti",
-            "fields": [],
-            "assetId": "39a19351-c101-4401-8a82-bbd809bc1299"
-          }
-        },
-        "557": {
-          "json": {
-            "isBasicViewEnabled": true,
-            "componentName": "Confetti",
-            "fields": [],
-            "assetId": "39a19351-c101-4401-8a82-bbd809bc1299"
-          }
-        },
-        "559": {
-          "json": {
-            "isBasicViewEnabled": true,
-            "componentName": "Confetti",
-            "fields": [],
-            "assetId": "39a19351-c101-4401-8a82-bbd809bc1299"
-          }
-        },
-        "560": {
-          "json": {
-            "isBasicViewEnabled": true,
-            "componentName": "Confetti",
-            "fields": [],
-            "assetId": "39a19351-c101-4401-8a82-bbd809bc1299"
-          }
-        },
-        "561": {
-          "json": {
-            "isBasicViewEnabled": true,
-            "componentName": "Confetti",
-            "fields": [],
-            "assetId": "39a19351-c101-4401-8a82-bbd809bc1299"
-          }
-        },
         "564": {
           "json": {
             "isBasicViewEnabled": true,

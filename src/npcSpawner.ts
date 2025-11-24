@@ -1,6 +1,6 @@
 import { Vector3, Quaternion, Color3, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, AvatarShape, Tween, EasingFunction, pointerEventsSystem, InputAction, MeshCollider, ColliderLayer, Billboard, BillboardMode, MeshRenderer, Material as MaterialECS, Schemas, AvatarAttach, AvatarAnchorPointType, GltfContainer } from '@dcl/sdk/ecs'
-import { Material, showUIMessage, ItemType, clearUIMessage } from './helpers'
+import { Material, showUIMessage, ItemType, clearUIMessage, activateConfettiAtSpot } from './helpers'
 import { incrementGoodDelivered, incrementBadDelivered, isGameOverActive } from './ui'
 
 // Tipo para un spot
@@ -464,7 +464,7 @@ export class NPCSpawner {
           showUIMessage('Wrong item')
         }
         
-        // Si el item es correcto, hacer que el NPC aplauda
+        // Si el item es correcto, hacer que el NPC aplauda y activar confetti
         if (isCorrectItem && AvatarShape.has(npcEntity)) {
           const avatarShape = AvatarShape.getMutable(npcEntity)
           // Asegurarse de que el NPC esté quieto antes de activar el emote
@@ -472,6 +472,9 @@ export class NPCSpawner {
             Tween.deleteFrom(npcEntity)
           }
           avatarShape.expressionTriggerId = 'clap'
+          
+          // Activar confetti en el spot correspondiente
+          activateConfettiAtSpot(spotId)
           console.log(`NPC ${npcId} activando emote de agradecimiento: clap`)
           
           // Sistema para volver a la expresión normal después de 2 segundos

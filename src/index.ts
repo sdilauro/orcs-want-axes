@@ -4,7 +4,7 @@ import { uiComponent } from './ui'
 // Importar NPCSpawner
 import { NPCSpawner } from './npcSpawner'
 // Importar helpers
-import { setupCinematicCamera, createWorkStations, createStorageStations, createDiscardStation, setNPCSpawnerInstance } from './helpers'
+import { setupCinematicCamera, createWorkStations, createStorageStations, createDiscardStation, setNPCSpawnerInstance, createConfettiItems } from './helpers'
 
 export function main() {
   // Configurar la cámara cinematográfica
@@ -16,6 +16,9 @@ export function main() {
   createWorkStations()
   createStorageStations()
   createDiscardStation()
+  
+  // Crear los confetti en cada spot
+  createConfettiItems()
 
   // Crear el spawner de NPCs
   const npcSpawner = new NPCSpawner(

@@ -1,5 +1,5 @@
 import { Vector3, Quaternion } from '@dcl/sdk/math'
-import { engine, Transform, VirtualCamera, MainCamera, TriggerArea, triggerAreaEventsSystem, Schemas, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, AvatarAttach, AvatarAnchorPointType, Entity, AvatarShape } from '@dcl/sdk/ecs'
+import { engine, Transform, VirtualCamera, MainCamera, TriggerArea, triggerAreaEventsSystem, Schemas, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, AvatarAttach, AvatarAnchorPointType, Entity, AvatarShape, Animator, AudioSource, VisibilityComponent } from '@dcl/sdk/ecs'
 import { CraftingStation } from './craftingStation'
 import { ProcessingStation } from './processingStation'
 import { StorageStation } from './storageStation'
@@ -173,6 +173,139 @@ export function createWorkStations() {
   )
   craftingStations.push(potionTable)
 }
+
+// Función para crear las entidades de confetti en cada spot de NPCs
+export function createConfettiItems() {
+  // Posiciones de los spots donde se paran los NPCs
+  const spotPositions = [
+    Vector3.create(9.75, 0, 15),
+    Vector3.create(8.1, 0, 15),
+    Vector3.create(6.5, 0, 15)
+  ]
+  
+  // Rotaciones para cada spot: spot 0 = -45, spot 1 = -90, spot 2 = -135
+  const spotRotations = [-45, -90, -135]
+  
+  for (let i = 0; i < spotPositions.length; i++) {
+    const spotPos = spotPositions[i]
+    const confettiEntity = engine.addEntity()
+    
+    // Posicionar el confetti en el spot, un poco arriba
+    Transform.create(confettiEntity, {
+      position: Vector3.create(spotPos.x, 1.5, spotPos.z),
+      rotation: Quaternion.fromEulerDegrees(0, spotRotations[i], 0),
+      scale: Vector3.create(0.5, 0.5, 0.5)
+    })
+    
+    // Cargar el modelo de confetti
+    GltfContainer.create(confettiEntity, {
+      src: 'assets/asset-packs/confetti/confetti.glb',
+      visibleMeshesCollisionMask: 0,
+      invisibleMeshesCollisionMask: 0
+    })
+    
+    // Agregar animador con la animación "Animation"
+    Animator.create(confettiEntity, {
+      states: [
+        {
+          clip: 'Animation',
+          playing: false,
+          loop: false,
+          speed: 1.0,
+          weight: 1.0,
+          shouldReset: false
+        }
+      ]
+    })
+    
+    // Agregar fuente de audio
+    AudioSource.create(confettiEntity, {
+      audioClipUrl: 'assets/asset-packs/confetti/fireworkexplode.mp3',
+      playing: false,
+      loop: false,
+      volume: 1.0
+    })
+    
+    // Inicialmente oculto
+    VisibilityComponent.create(confettiEntity, {
+      visible: false
+    })
+    
+    confettiEntities.push(confettiEntity)
+  }
+}
+
+// Función para activar el confetti en un spot específico
+export function activateConfettiAtSpot(spotId: number) {
+  if (spotId >= 0 && spotId < confettiEntities.length) {
+    const confettiEntity = confettiEntities[spotId]
+    
+    // Mostrar el confetti
+    if (VisibilityComponent.has(confettiEntity)) {
+      VisibilityComponent.getMutable(confettiEntity).visible = true
+    }
+    
+    // Reproducir animación
+    if (Animator.has(confettiEntity)) {
+      const animator = Animator.getMutable(confettiEntity)
+      if (animator.states.length > 0) {
+        animator.states[0].playing = true
+      }
+    }
+    
+    // Reproducir sonido - detener primero y luego iniciar para asegurar reproducción
+    if (AudioSource.has(confettiEntity)) {
+      const audioSource = AudioSource.getMutable(confettiEntity)
+      audioSource.playing = false // Detener primero
+      // Usar createOrReplace para reiniciar el audio
+      AudioSource.createOrReplace(confettiEntity, {
+        audioClipUrl: 'assets/asset-packs/confetti/fireworkexplode.mp3',
+        playing: true,
+        loop: false,
+        volume: 1.0
+      })
+    } else {
+      // Si no existe, crearlo
+      AudioSource.create(confettiEntity, {
+        audioClipUrl: 'assets/asset-packs/confetti/fireworkexplode.mp3',
+        playing: true,
+        loop: false,
+        volume: 1.0
+      })
+    }
+    
+    // Registrar el tiempo de activación para ocultar después de 10 segundos
+    confettiActivationTime.set(confettiEntity, Date.now())
+  }
+}
+
+// Sistema para ocultar confetti después de 3 segundos
+engine.addSystem((dt: number) => {
+  const currentTime = Date.now()
+  const confettiToHide: Entity[] = []
+  
+  for (const [entity, activationTime] of confettiActivationTime.entries()) {
+    const elapsed = currentTime - activationTime
+    if (elapsed >= 3000) { // 3 segundos
+      // Ocultar el confetti
+      if (VisibilityComponent.has(entity)) {
+        VisibilityComponent.getMutable(entity).visible = false
+      }
+      if (Animator.has(entity)) {
+        const animator = Animator.getMutable(entity)
+        if (animator.states.length > 0) {
+          animator.states[0].playing = false
+        }
+      }
+      confettiToHide.push(entity)
+    }
+  }
+  
+  // Limpiar el map
+  for (const entity of confettiToHide) {
+    confettiActivationTime.delete(entity)
+  }
+}, 0, 'confettiHideSystem')
 
 // Función para crear las StorageStations
 export function createStorageStations() {
@@ -384,6 +517,12 @@ let npcSpawnerInstance: any = null
 let processingStations: ProcessingStation[] = []
 let craftingStations: CraftingStation[] = []
 let storageStations: StorageStation[] = []
+
+// Array para almacenar las entidades de confetti en cada spot
+let confettiEntities: Entity[] = []
+
+// Map para rastrear el tiempo de activación de cada confetti
+const confettiActivationTime: Map<Entity, number> = new Map()
 
 // Función para establecer la referencia del NPCSpawner
 export function setNPCSpawnerInstance(spawner: any) {
