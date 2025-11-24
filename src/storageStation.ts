@@ -1,6 +1,6 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS } from '@dcl/sdk/ecs'
-import { Material, FuelType } from './workStation'
+import { Material, ItemType } from './helpers'
 
 // Tipo para los datos de Transform
 type TransformData = {
@@ -52,13 +52,13 @@ function attachCubeToRightHand(itemId: string) {
 
 export class StorageStation {
   private entity: Entity
-  private resourceType: FuelType
+  private resourceType: ItemType
   private showMessage?: (message: string) => void
 
   constructor(
     transform: TransformData,
     modelPath: string,
-    resourceType: FuelType,
+    resourceType: ItemType,
     showMessage?: (message: string) => void
   ) {
     // Crear la entidad
@@ -84,7 +84,8 @@ export class StorageStation {
   }
 
   private setupInteraction() {
-    const resourceTypeName = this.resourceType.charAt(0).toUpperCase() + this.resourceType.slice(1)
+    // Obtener el nombre del item desde el enum ItemType
+    const resourceTypeName = this.getResourceTypeName()
     
     pointerEventsSystem.onPointerDown(
       {
@@ -101,6 +102,27 @@ export class StorageStation {
     )
   }
 
+  private getResourceTypeName(): string {
+    // Convertir el enum value a un nombre legible
+    switch (this.resourceType) {
+      case ItemType.HERB:
+        return 'Herb'
+      case ItemType.CUP:
+        return 'Cup'
+      case ItemType.ORE:
+        return 'Ore'
+      case ItemType.IRON:
+        return 'Iron'
+      case ItemType.AXE:
+        return 'Axe'
+      case ItemType.POTION:
+        return 'Potion'
+      default:
+        const typeStr = String(this.resourceType)
+        return typeStr.charAt(0).toUpperCase() + typeStr.slice(1)
+    }
+  }
+
   private handleInteraction() {
     // Verificar si el jugador ya tiene algo en la mano derecha
     if (hasSomethingInRightHand()) {
@@ -113,12 +135,13 @@ export class StorageStation {
     // Attachear el material a la mano derecha
     attachCubeToRightHand(this.resourceType)
     
+    const resourceTypeName = this.getResourceTypeName()
     if (this.showMessage) {
-      this.showMessage(`Took ${this.resourceType}`)
+      this.showMessage(`Took ${resourceTypeName}`)
     }
   }
 
-  public getResourceType(): FuelType {
+  public getResourceType(): ItemType {
     return this.resourceType
   }
 

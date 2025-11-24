@@ -1,11 +1,10 @@
-import { Vector3 } from '@dcl/sdk/math'
 import { ReactEcsRenderer } from '@dcl/sdk/react-ecs'
 import { uiComponent } from './ui'
 
 // Importar NPCSpawner
 import { NPCSpawner } from './npcSpawner'
 // Importar helpers
-import { setupCinematicCamera, createWorkStations, createStorageStations, showUIMessage } from './helpers'
+import { setupCinematicCamera, createWorkStations } from './helpers'
 
 export function main() {
   // Configurar la cámara cinematográfica
@@ -14,11 +13,8 @@ export function main() {
   // Configurar el renderer de UI
   ReactEcsRenderer.setUiRenderer(uiComponent)
 
-  // Crear las 3 WorkStations
   createWorkStations()
 
-  // Crear las 3 StorageStations
-  createStorageStations()
 
   // Crear el spawner de NPCs
   new NPCSpawner(

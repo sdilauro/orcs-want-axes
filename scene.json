@@ -36,8 +36,8 @@
           0
         ],
         "z": [
-          6,
-          9
+          10,
+          13
         ]
       },
       "cameraTarget": {
@@ -59,8 +59,6 @@
     "origin": "creator-hub",
     "projectId": "61f670a3-a677-4b7c-a808-698134af94fb"
   },
-  "skyboxConfig": {
-    "fixedTime": 86340
-  },
+  "skyboxConfig": {},
   "rating": "T"
 }
