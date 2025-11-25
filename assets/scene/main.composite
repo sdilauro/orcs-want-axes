@@ -447,6 +447,27 @@
             "parent": 0
           }
         },
+        "533": {
+          "json": {
+            "position": {
+              "x": 8.5,
+              "y": 0,
+              "z": 10.25
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "w": 1
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "parent": 0
+          }
+        },
         "536": {
           "json": {
             "position": {
@@ -892,6 +913,12 @@
             "entityId": 8004
           }
         },
+        "533": {
+          "json": {
+            "networkId": 0,
+            "entityId": 8008
+          }
+        },
         "551": {
           "json": {
             "networkId": 0,
@@ -924,6 +951,28 @@
         "0": {
           "json": {
             "states": []
+          }
+        },
+        "533": {
+          "json": {
+            "states": [
+              {
+                "clip": "Idle",
+                "playing": false,
+                "weight": 1,
+                "speed": 1,
+                "loop": true,
+                "shouldReset": false
+              },
+              {
+                "clip": "Play",
+                "playing": false,
+                "weight": 1,
+                "speed": 1,
+                "loop": false,
+                "shouldReset": false
+              }
+            ]
           }
         }
       }
@@ -1032,6 +1081,13 @@
           "json": {
             "src": "assets/asset-packs/invisible_wall/invisible_box.glb",
             "visibleMeshesCollisionMask": 2,
+            "invisibleMeshesCollisionMask": 0
+          }
+        },
+        "533": {
+          "json": {
+            "src": "assets/asset-packs/game_over/gameover2.glb",
+            "visibleMeshesCollisionMask": 0,
             "invisibleMeshesCollisionMask": 0
           }
         },
@@ -1489,6 +1545,11 @@
             "value": "Invisible Wall"
           }
         },
+        "533": {
+          "json": {
+            "value": "Game Over"
+          }
+        },
         "536": {
           "json": {
             "value": "Mines Wood Fence1 4M"
@@ -1615,6 +1676,15 @@
             ]
           }
         },
+        "533": {
+          "json": {
+            "componentIds": [
+              1042,
+              1081,
+              1020
+            ]
+          }
+        },
         "551": {
           "json": {
             "componentIds": [
@@ -1648,6 +1718,11 @@
       },
       "data": {
         "532": {
+          "json": {
+            "visible": false
+          }
+        },
+        "533": {
           "json": {
             "visible": false
           }
@@ -1717,7 +1792,7 @@
         "serializationType": "map"
       },
       "data": {
-        "564": {
+        "533": {
           "json": {
             "gizmo": 0
           }
@@ -2173,7 +2248,8 @@
                   523,
                   524,
                   554,
-                  564
+                  564,
+                  533
                 ]
               },
               {
@@ -2357,6 +2433,10 @@
               },
               {
                 "entity": 564,
+                "children": []
+              },
+              {
+                "entity": 533,
                 "children": []
               }
             ]
@@ -2642,6 +2722,50 @@
         "serializationType": "map"
       },
       "data": {
+        "533": {
+          "json": {
+            "id": 19,
+            "value": [
+              {
+                "name": "Play anim",
+                "type": "play_animation",
+                "jsonPayload": "{\"animation\":\"Play\",\"loop\":true}"
+              },
+              {
+                "name": "Reset",
+                "type": "stop_animation",
+                "jsonPayload": "{}"
+              },
+              {
+                "name": "Show",
+                "type": "set_visibility",
+                "jsonPayload": "{\"visible\":true,\"collider\":0}"
+              },
+              {
+                "name": "Hide",
+                "type": "set_visibility",
+                "jsonPayload": "{\"visible\":false,\"collider\":0}",
+                "allowedInBasicView": true
+              },
+              {
+                "name": "Delay hide",
+                "type": "start_delay",
+                "jsonPayload": "{\"actions\":[\"Hide\"],\"timeout\":1.1}"
+              },
+              {
+                "name": "Pop Up",
+                "type": "batch",
+                "jsonPayload": "{\"actions\":[\"Play anim\",\"Show\",\"Sound\"]}",
+                "allowedInBasicView": true
+              },
+              {
+                "name": "Sound",
+                "type": "play_sound",
+                "jsonPayload": "{\"src\":\"assets/asset-packs/game_over/gameover.mp3\"}"
+              }
+            ]
+          }
+        },
         "564": {
           "json": {
             "id": 15,
@@ -2690,7 +2814,7 @@
         "0": {
           "json": {
             "id": 0,
-            "value": 15
+            "value": 19
           }
         }
       }
@@ -2950,6 +3074,9 @@
           "json": {}
         },
         "532": {
+          "json": {}
+        },
+        "533": {
           "json": {}
         },
         "534": {
@@ -3595,6 +3722,14 @@
         "serializationType": "map"
       },
       "data": {
+        "533": {
+          "json": {
+            "isBasicViewEnabled": true,
+            "componentName": "Game Over",
+            "fields": [],
+            "assetId": "305e4602-6d02-4b60-b029-5356d1ab684c"
+          }
+        },
         "564": {
           "json": {
             "isBasicViewEnabled": true,

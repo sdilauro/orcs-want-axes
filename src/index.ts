@@ -5,6 +5,7 @@ import { uiComponent } from './ui'
 import { NPCSpawner } from './npcSpawner'
 // Importar helpers
 import { setupCinematicCamera, createWorkStations, createStorageStations, createDiscardStation, setNPCSpawnerInstance, createConfettiItems } from './helpers'
+import { NPC_SPAWN_INTERVAL, NPC_SPEED } from './constants'
 
 export function main() {
   // Configurar la cámara cinematográfica
@@ -22,8 +23,8 @@ export function main() {
 
   // Crear el spawner de NPCs
   const npcSpawner = new NPCSpawner(
-    2000, // spawnInterval en milisegundos
-    1.2   // speed en metros por segundo
+    NPC_SPAWN_INTERVAL, // spawnInterval en milisegundos
+    NPC_SPEED   // speed en metros por segundo
   )
 
   // Establecer la referencia del spawner en helpers para poder resetear el juego

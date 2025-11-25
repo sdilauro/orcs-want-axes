@@ -1,6 +1,7 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, Billboard, BillboardMode, AvatarShape } from '@dcl/sdk/ecs'
-import { Material, ItemType, getItemTypeFromModelPath } from './helpers'
+import { Material, getItemTypeFromModelPath } from './helpers'
+import { ItemType } from './constants'
 import { isGameOverActive } from './ui'
 
 // Tipo para los datos de Transform
@@ -52,13 +53,25 @@ function hasMaterialAttached(materialId: string): { hasItem: boolean, itemEntity
   return { hasItem: false }
 }
 
-// Función helper para eliminar el material attachado a la mano derecha
+// Función helper para eliminar el material attachado a la mano derecha del jugador
 function removeRightHandItem() {
   try {
+    // Obtener todos los NPCs para excluirlos
+    const npcAvatarIds = new Set<string>()
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      // Los NPCs tienen name vacío, el jugador tiene un name
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
+      }
+    }
+    
     for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
       if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        engine.removeEntity(entity)
-        return
+        // Solo eliminar si NO está attachado a un NPC
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          engine.removeEntity(entity)
+          return
+        }
       }
     }
   } catch (error) {
@@ -195,9 +208,10 @@ export class ProcessingStation {
       1 / stationScale.z
     )
     
+    // Inicializar con escala Y = 1 (se reducirá conforme avance el progreso)
     Transform.create(this.spinnerEntity, {
       position: Vector3.create(0, 3, 0), // 3 metros arriba de la estación
-      scale: inverseScale,
+      scale: Vector3.create(inverseScale.x, inverseScale.y, inverseScale.z), // Escala Y inicial = 1
       parent: this.entity
     })
     
@@ -263,6 +277,25 @@ export class ProcessingStation {
       // Actualizar progreso
       mutableStation.workProgress += dt / mutableStation.workDuration
       
+      // Actualizar escala Y del spinner basándose en el progreso (de 1 a 0)
+      if (Transform.has(this.spinnerEntity)) {
+        const spinnerTransform = Transform.getMutable(this.spinnerEntity)
+        const stationTransform = Transform.get(this.entity)
+        const stationScale = stationTransform.scale || Vector3.create(1, 1, 1)
+        const inverseScale = Vector3.create(
+          1 / stationScale.x,
+          1 / stationScale.y,
+          1 / stationScale.z
+        )
+        // Escala Y va de 1 a 0 conforme el progreso va de 0 a 1
+        const progressYScale = 1 - mutableStation.workProgress
+        spinnerTransform.scale = Vector3.create(
+          inverseScale.x,
+          inverseScale.y * progressYScale,
+          inverseScale.z
+        )
+      }
+      
       // Si el trabajo está completo
       if (mutableStation.workProgress >= 1.0) {
         mutableStation.isWorking = false
@@ -271,8 +304,8 @@ export class ProcessingStation {
         // Ocultar spinner
         this.hideSpinner()
         
-        // Attachear el resultado a la mano derecha del jugador
-        this.attachResultToPlayer(mutableStation.resultModel)
+        // Crear el resultado en el piso
+        this.spawnResultOnFloor(mutableStation.resultModel)
         
         // Remover el sistema de trabajo
         engine.removeSystem(this.workSystemName)
@@ -284,13 +317,25 @@ export class ProcessingStation {
     }, 0, this.workSystemName)
   }
 
-  private attachResultToPlayer(modelPath: string) {
-    // Spawnea el resultado en la posición especificada
+  private spawnResultOnFloor(modelPath: string) {
+    // Crea el resultado en el piso con variación random en posición y rotación
     const resultEntity = engine.addEntity()
     
+    // Variación random en X y Z de +/-0.2
+    const randomX = (Math.random() - 0.5) * 0.4 // -0.2 a +0.2
+    const randomZ = (Math.random() - 0.5) * 0.4 // -0.2 a +0.2
+    const randomYRotation = Math.random() * 360 // 0 a 360 grados
+    
+    // Posición con variación random, Y siempre en 0
+    const randomPosition = Vector3.create(
+      this.resultPosition.x + randomX,
+      0, // Y siempre en 0
+      this.resultPosition.z + randomZ
+    )
+    
     Transform.create(resultEntity, {
-      position: this.resultPosition,
-      rotation: Quaternion.fromEulerDegrees(0, 0, 0),
+      position: randomPosition,
+      rotation: Quaternion.fromEulerDegrees(0, randomYRotation, 0),
       scale: Vector3.create(1, 1, 1)
     })
     

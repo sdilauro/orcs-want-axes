@@ -1,6 +1,7 @@
 import { Vector3, Quaternion, Color3, Color4 } from '@dcl/sdk/math'
-import { engine, Transform, Entity, AvatarShape, Tween, EasingFunction, pointerEventsSystem, InputAction, MeshCollider, ColliderLayer, Billboard, BillboardMode, MeshRenderer, Material as MaterialECS, Schemas, AvatarAttach, AvatarAnchorPointType, GltfContainer } from '@dcl/sdk/ecs'
-import { Material, showUIMessage, ItemType, clearUIMessage, activateConfettiAtSpot } from './helpers'
+import { engine, Transform, Entity, AvatarShape, Tween, EasingFunction, pointerEventsSystem, InputAction, MeshCollider, ColliderLayer, Billboard, BillboardMode, MeshRenderer, Material as MaterialECS, Schemas, AvatarAttach, AvatarAnchorPointType, GltfContainer, VisibilityComponent } from '@dcl/sdk/ecs'
+import { Material, showUIMessage, clearUIMessage, activateConfettiAtSpot } from './helpers'
+import { ItemType, NPC_SPOTS, NPC_ORIGIN_EAST, NPC_ORIGIN_WEST, NPC_SPAWN_INTERVAL, NPC_SPEED, NPC_WAIT_TIME, arrivalEmotes, goodbyeEmotes } from './constants'
 import { incrementGoodDelivered, incrementBadDelivered, isGameOverActive } from './ui'
 
 // Tipo para un spot
@@ -162,16 +163,7 @@ function removePlayerRightHandItem() {
 }
 
 export class NPCSpawner {
-  // Constantes para los spots
-  private static readonly SPOTS: { id: number, position: Vector3 }[] = [
-    { id: 0, position: Vector3.create(9.75, 0, 15) },
-    { id: 1, position: Vector3.create(8.1, 0, 15) },
-    { id: 2, position: Vector3.create(6.5, 0, 15) }
-  ]
-  
-  // Constantes para los puntos de origen
-  private static readonly ORIGIN_EAST = Vector3.create(14, 0, 18)
-  private static readonly ORIGIN_WEST = Vector3.create(2, 0, 18)
+  // Las constantes de spots y orígenes están ahora en constants.ts
   
   private spots: Spot[]
   private npcIndex: number = 0
@@ -183,10 +175,10 @@ export class NPCSpawner {
   private isSpawning: boolean = true // Flag para controlar si el spawning está activo
 
   constructor(
-    spawnInterval: number = 2000,
-    speed: number = 1.2
+    spawnInterval: number = NPC_SPAWN_INTERVAL,
+    speed: number = NPC_SPEED
   ) {
-    this.spots = NPCSpawner.SPOTS.map(spot => ({ ...spot, occupied: false }))
+    this.spots = NPC_SPOTS.map(spot => ({ ...spot, occupied: false }))
     this.spawnInterval = spawnInterval
     this.speed = speed
     this.systemName = `npcSpawner-${Date.now()}`
@@ -197,35 +189,56 @@ export class NPCSpawner {
   private getFreeSpot(): Spot | null {
     for (const spot of this.spots) {
       if (!spot.occupied) {
+        console.log(`Spot ${spot.id} disponible encontrado`)
         return spot
       }
     }
+    console.log('No hay spots disponibles')
     return null
   }
 
   private occupySpot(spotId: number) {
     const spot = this.spots.find(s => s.id === spotId)
     if (spot) {
+      if (spot.occupied) {
+        console.error(`Intento de ocupar spot ${spotId} que ya está ocupado!`)
+        return false
+      }
       spot.occupied = true
+      console.log(`Spot ${spotId} ocupado. Estado actual:`, this.spots.map(s => ({ id: s.id, occupied: s.occupied })))
+      return true
+    } else {
+      console.error(`Intento de ocupar spot ${spotId} que no existe`)
+      return false
     }
   }
 
   private freeSpot(spotId: number) {
     const spot = this.spots.find(s => s.id === spotId)
     if (spot) {
+      if (!spot.occupied) {
+        console.error(`Intento de liberar spot ${spotId} que ya está libre!`)
+      }
       spot.occupied = false
+      console.log(`Spot ${spotId} liberado. Estado actual:`, this.spots.map(s => ({ id: s.id, occupied: s.occupied })))
+    } else {
+      console.error(`Intento de liberar spot ${spotId} que no existe`)
     }
   }
 
   private getClosestOrigin(spotPos: Vector3): Vector3 {
-    const distToEast = Vector3.distance(NPCSpawner.ORIGIN_EAST, spotPos)
-    const distToWest = Vector3.distance(NPCSpawner.ORIGIN_WEST, spotPos)
-    return distToEast < distToWest ? NPCSpawner.ORIGIN_EAST : NPCSpawner.ORIGIN_WEST
+    const distToEast = Vector3.distance(NPC_ORIGIN_EAST, spotPos)
+    const distToWest = Vector3.distance(NPC_ORIGIN_WEST, spotPos)
+    return distToEast < distToWest ? NPC_ORIGIN_EAST : NPC_ORIGIN_WEST
   }
 
   private createWalkingNPC(npcId: number, spotId: number, spotPos: Vector3) {
-    // Marcar el spot como ocupado
-    this.occupySpot(spotId)
+    // Marcar el spot como ocupado y verificar que se ocupó correctamente
+    const spotOccupied = this.occupySpot(spotId)
+    if (!spotOccupied) {
+      console.error(`No se pudo ocupar el spot ${spotId}, abortando creación de NPC ${npcId}`)
+      return
+    }
     
     const npc = engine.addEntity()
     // Agregar a la lista de NPCs activos
@@ -288,7 +301,10 @@ export class NPCSpawner {
       emotes: [] // Array vacío - los emotes predefinidos se activan con expressionTriggerId
     })
     
-    createAvatarPlane(npc)
+    // Crear el plano del avatar y guardar su referencia (inicialmente oculto)
+    const avatarPlane = createAvatarPlane(npc)
+    // Ocultar el plano inicialmente (solo se mostrará cuando esté quieto en el spot)
+    VisibilityComponent.createOrReplace(avatarPlane, { visible: false })
     
     // Función para limpiar todos los sistemas relacionados con este NPC
     const cleanupNPCSystems = () => {
@@ -316,40 +332,176 @@ export class NPCSpawner {
       try {
         engine.removeSystem(`spinnerRotation-${npcId}`)
       } catch (e) {}
+      try {
+        engine.removeSystem(`waitTimer-${npcId}`)
+      } catch (e) {}
+    }
+    
+    // Variable para rastrear si el NPC ya recibió un item
+    let hasReceivedItem = false
+    
+    // Función para iniciar el timer de espera
+    const startWaitTimer = () => {
+      const waitTimerSystemName = `waitTimer-${npcId}`
+      let waitElapsed = 0
+      const initialPlaneScale = 0.5 // Escala inicial del plano
+      
+      // Verificar que el sistema no exista ya
+      try {
+        engine.removeSystem(waitTimerSystemName)
+      } catch (e) {
+        // El sistema no existe, está bien
+      }
+      
+      engine.addSystem((dt: number) => {
+        // Si el NPC ya recibió un item, cancelar el timer
+        if (hasReceivedItem) {
+          engine.removeSystem(waitTimerSystemName)
+          return
+        }
+        
+        // Si el NPC ya no existe, limpiar y salir
+        if (!Transform.has(npc) || !AvatarShape.has(npc)) {
+          engine.removeSystem(waitTimerSystemName)
+          return
+        }
+        
+        waitElapsed += dt
+        
+        // Calcular el progreso (0 a 1)
+        const progress = waitElapsed / NPC_WAIT_TIME
+        
+        // Actualizar la escala Y del plano conforme avanza el tiempo (de 1 a 0)
+        if (Transform.has(avatarPlane)) {
+          const planeTransform = Transform.getMutable(avatarPlane)
+          const progressYScale = 1 - progress // Va de 1 a 0
+          planeTransform.scale = Vector3.create(
+            initialPlaneScale,
+            initialPlaneScale * progressYScale,
+            1
+          )
+        }
+        
+        // Si el tiempo de espera se agotó
+        if (waitElapsed >= NPC_WAIT_TIME) {
+          // Aumentar badDelivered porque el NPC se fue sin recibir el item
+          incrementBadDelivered()
+          
+          // Hacer que el NPC se marche (bad delivered porque se fue sin recibir nada)
+          sendNPCBack(false)
+          
+          // Remover el sistema
+          engine.removeSystem(waitTimerSystemName)
+        }
+      }, 0, waitTimerSystemName)
     }
     
     // Función para hacer que el NPC vuelva a su punto de origen
-    const sendNPCBack = () => {
+    // isGood: true si recibió el item correcto, false si recibió el item incorrecto o se fue sin recibir nada
+    const sendNPCBack = (isGood: boolean = false) => {
+      // Verificar que el NPC y su Transform aún existen
+      if (!Transform.has(npc) || !AvatarShape.has(npc)) {
+        return
+      }
+      
       this.freeSpot(spotId)
       
       // Activar emote de despedida antes de irse
       if (AvatarShape.has(npc)) {
-        const goodbyeEmotes = ['wave', 'raiseHand']
-        const goodbyeEmote = goodbyeEmotes[Math.floor(Math.random() * goodbyeEmotes.length)]
-        const avatarShape = AvatarShape.getMutable(npc)
         // Asegurarse de que el NPC esté quieto antes de activar el emote
         if (Tween.has(npc)) {
           Tween.deleteFrom(npc)
         }
-        avatarShape.expressionTriggerId = goodbyeEmote
-        console.log(`NPC ${npcId} activando emote de despedida: ${goodbyeEmote}`)
         
-        // Sistema para volver a la expresión normal después de 1.5 segundos
-        const goodbyeEmoteSystemName = `goodbyeEmote-${npcId}`
-        let goodbyeEmoteElapsed = 0
+        // Esperar un pequeño delay para asegurar que el NPC esté completamente quieto
+        const emoteDelaySystemName = `goodbyeEmoteDelay-${npcId}`
+        let emoteDelayElapsed = 0
+        const delayDuration = 100 // 100ms de delay
+        
         engine.addSystem((dt: number) => {
           if (!AvatarShape.has(npc) || !Transform.has(npc)) {
-            engine.removeSystem(goodbyeEmoteSystemName)
+            engine.removeSystem(emoteDelaySystemName)
             return
           }
           
-          goodbyeEmoteElapsed += dt * 1000
+          emoteDelayElapsed += dt * 1000
           
-          if (goodbyeEmoteElapsed >= 1500) {
-            // No modificar expressionTriggerId - simplemente dejar que termine naturalmente
-            engine.removeSystem(goodbyeEmoteSystemName)
+          // Después del delay, activar el emote
+          if (emoteDelayElapsed >= delayDuration) {
+            engine.removeSystem(emoteDelaySystemName)
+            
+            // Ocultar el plano del timer
+            if (Transform.has(avatarPlane)) {
+              VisibilityComponent.createOrReplace(avatarPlane, { visible: false })
+            }
+            
+            // Desactivar la interacción del avatar
+            deactivateInteraction()
+            
+            // Seleccionar el emote según si fue good o bad
+            // good delivered = goodbyeEmotes[0] (clap), bad delivered = goodbyeEmotes[1] (dontsee)
+            const goodbyeEmote = isGood ? goodbyeEmotes[0] : goodbyeEmotes[1]
+            const avatarShape = AvatarShape.getMutable(npc)
+            avatarShape.expressionTriggerId = goodbyeEmote
+            
+            // Sistema para iniciar el movimiento después de que el emote se haya reproducido
+            const goodbyeEmoteSystemName = `goodbyeEmote-${npcId}`
+            let goodbyeEmoteElapsed = 0
+            const emoteDuration = 2000 // 2 segundos para que el emote se reproduzca
+            
+            engine.addSystem((dt2: number) => {
+              if (!AvatarShape.has(npc) || !Transform.has(npc)) {
+                engine.removeSystem(goodbyeEmoteSystemName)
+                return
+              }
+              
+              goodbyeEmoteElapsed += dt2 * 1000
+              
+              // Después de que pase el tiempo del emote, iniciar el movimiento
+              if (goodbyeEmoteElapsed >= emoteDuration) {
+                engine.removeSystem(goodbyeEmoteSystemName)
+                
+                // Verificar nuevamente que el Transform existe antes de usarlo
+                if (!Transform.has(npc)) {
+                  return
+                }
+                
+                if (Tween.has(npc)) {
+                  Tween.deleteFrom(npc)
+                }
+                
+                const currentPos = Transform.get(npc).position
+                const rotationToOrigin = getRotationToTarget(currentPos, startPos)
+                Transform.getMutable(npc).rotation = rotationToOrigin
+                
+                const distance = Vector3.distance(currentPos, startPos)
+                const returnDuration = (distance / this.speed) * 1000
+                
+                Tween.setMove(
+                  npc,
+                  currentPos,
+                  startPos,
+                  returnDuration,
+                  EasingFunction.EF_LINEAR
+                )
+                
+                // Iniciar el sistema de verificación de retorno
+                startReturnCheckSystem()
+              }
+            }, 0, goodbyeEmoteSystemName)
           }
-        }, 0, goodbyeEmoteSystemName)
+        }, 0, emoteDelaySystemName)
+      } else {
+        // Si no hay AvatarShape, iniciar el movimiento inmediatamente
+        startReturnMovement()
+      }
+    }
+    
+    // Función helper para iniciar el movimiento de retorno
+    const startReturnMovement = () => {
+      // Verificar nuevamente que el Transform existe antes de usarlo
+      if (!Transform.has(npc)) {
+        return
       }
       
       if (Tween.has(npc)) {
@@ -370,6 +522,13 @@ export class NPCSpawner {
         returnDuration,
         EasingFunction.EF_LINEAR
       )
+      
+      // Iniciar el sistema de verificación de retorno
+      startReturnCheckSystem()
+    }
+    
+    // Función helper para iniciar el sistema de verificación de retorno
+    const startReturnCheckSystem = () => {
       
       const returnSystemName = `checkReturn-${npcId}`
       engine.addSystem((dt: number) => {
@@ -417,6 +576,18 @@ export class NPCSpawner {
         return
       }
       
+      // Marcar que el NPC recibió un item (esto cancelará el timer de espera)
+      hasReceivedItem = true
+      
+      // Resetear el plano del avatar a su escala original
+      if (Transform.has(avatarPlane)) {
+        const planeTransform = Transform.getMutable(avatarPlane)
+        planeTransform.scale = Vector3.create(0.5, 0.5, 1)
+      }
+      
+      // Declarar isCorrectItem fuera del try para que esté disponible en el finally
+      let isCorrectItem = false
+      
       try {
         // Determinar el tipo de item recibido
         let receivedItemType: string | undefined = itemId
@@ -441,7 +612,7 @@ export class NPCSpawner {
         // Validar si el item es correcto según el tipo de NPC
         // Orco + Axe = good, Elfo + Potion = good, cualquier otro caso = wrong
         const expectedItemType = isElf ? ItemType.POTION : ItemType.AXE
-        const isCorrectItem = receivedItemType === expectedItemType
+        isCorrectItem = receivedItemType === expectedItemType
         
         // Remover el item del jugador INMEDIATAMENTE para que pueda tomar otro
         // Eliminar directamente la entidad que se pasó como parámetro
@@ -475,7 +646,6 @@ export class NPCSpawner {
           
           // Activar confetti en el spot correspondiente
           activateConfettiAtSpot(spotId)
-          console.log(`NPC ${npcId} activando emote de agradecimiento: clap`)
           
           // Sistema para volver a la expresión normal después de 2 segundos
           const thankEmoteSystemName = `thankEmote-${npcId}`
@@ -536,7 +706,11 @@ export class NPCSpawner {
         console.error('Error en giveItemToNPC:', error)
       } finally {
         // Siempre enviar al NPC de vuelta, incluso si hay errores
-        sendNPCBack()
+        // Pero solo si el NPC aún existe
+        // Usar isCorrectItem para determinar qué emote usar
+        if (Transform.has(npcEntity) && AvatarShape.has(npcEntity)) {
+          sendNPCBack(isCorrectItem)
+        }
       }
     }
     
@@ -547,7 +721,7 @@ export class NPCSpawner {
       rotation: rotation
     })
     
-    // Crear collider para interacción
+    // Crear collider para interacción (pero no configurar la interacción todavía)
     const colliderEntity = engine.addEntity()
     Transform.create(colliderEntity, {
       position: Vector3.create(0, 0.9, 0),
@@ -569,18 +743,35 @@ export class NPCSpawner {
       }
     }
     
-    // Configurar interacción que siempre muestra "Give item"
-    pointerEventsSystem.onPointerDown(
-      {
-        entity: colliderEntity,
-        opts: {
-          button: InputAction.IA_POINTER,
-          hoverText: 'Give item',
-          maxDistance: 2
-        }
-      },
-      handleNPCInteraction
-    )
+    // Variable para almacenar la referencia de la interacción (se configurará cuando esté quieto)
+    let interactionHandler: any = null
+    
+    // Función para activar la interacción (se llamará cuando el NPC esté quieto en el spot)
+    const activateInteraction = () => {
+      if (!interactionHandler && Transform.has(colliderEntity)) {
+        // Configurar interacción que siempre muestra "Give item"
+        interactionHandler = pointerEventsSystem.onPointerDown(
+          {
+            entity: colliderEntity,
+            opts: {
+              button: InputAction.IA_POINTER,
+              hoverText: 'Give item',
+              maxDistance: 2
+            }
+          },
+          handleNPCInteraction
+        )
+      }
+    }
+    
+    // Función para desactivar la interacción
+    const deactivateInteraction = () => {
+      if (interactionHandler && Transform.has(colliderEntity)) {
+        // Eliminar el collider para desactivar la interacción
+        engine.removeEntity(colliderEntity)
+        interactionHandler = null
+      }
+    }
     
     // Calcular duración basada en la distancia
     const distance = Vector3.distance(startPos, spotPos)
@@ -673,8 +864,10 @@ export class NPCSpawner {
         )
         
         // Activar un emote cuando llega al spot (después de que termine el movimiento final)
+        // Usar un delay simple en lugar de verificar el Tween
         const arrivalEmoteSystemName = `arrivalEmote-${npcId}`
         let arrivalEmoteElapsed = 0
+        let emoteActivated = false
         engine.addSystem((dt: number) => {
           if (!Transform.has(npc) || !AvatarShape.has(npc)) {
             engine.removeSystem(arrivalEmoteSystemName)
@@ -683,27 +876,35 @@ export class NPCSpawner {
           
           arrivalEmoteElapsed += dt * 1000
           
-          // Activar emote después de que termine el movimiento final (cuando está quieto)
-          if (arrivalEmoteElapsed >= moveDuration && AvatarShape.has(npc) && Transform.has(npc) && !Tween.has(npc)) {
-            const arrivalEmotes = ['wave', 'raiseHand', 'fistpump']
+          // Activar emote después de que pase el tiempo del movimiento final
+          // Agregar un pequeño buffer de 100ms para asegurar que el Tween haya terminado
+          if (!emoteActivated && arrivalEmoteElapsed >= (moveDuration + 100)) {
+            emoteActivated = true
+            
             const arrivalEmote = arrivalEmotes[Math.floor(Math.random() * arrivalEmotes.length)]
             const avatarShape = AvatarShape.getMutable(npc)
             avatarShape.expressionTriggerId = arrivalEmote
-            console.log(`NPC ${npcId} activando emote de llegada: ${arrivalEmote}`)
             
-            // Desactivar emote después de 2 segundos
-            const emoteEndTime = arrivalEmoteElapsed + 2000
+            // Iniciar sistema para esperar 2 segundos y luego iniciar el timer de espera
             const emoteEndSystemName = `arrivalEmoteEnd-${npcId}`
+            let emoteEndElapsed = 0
             engine.addSystem((dt2: number) => {
               if (!AvatarShape.has(npc) || !Transform.has(npc)) {
                 engine.removeSystem(emoteEndSystemName)
                 return
               }
               
-              arrivalEmoteElapsed += dt2 * 1000
-              if (arrivalEmoteElapsed >= emoteEndTime) {
+              emoteEndElapsed += dt2 * 1000
+              if (emoteEndElapsed >= 2000) {
                 // No modificar expressionTriggerId - simplemente dejar que termine naturalmente
                 engine.removeSystem(emoteEndSystemName)
+                
+                // Mostrar el plano del timer y activar la interacción cuando esté quieto
+                VisibilityComponent.createOrReplace(avatarPlane, { visible: true })
+                activateInteraction()
+                
+                // Iniciar el timer de espera después de que termine el emote
+                startWaitTimer()
               }
             }, 0, emoteEndSystemName)
             

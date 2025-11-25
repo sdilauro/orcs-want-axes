@@ -2,8 +2,8 @@ import { Vector3, Quaternion } from '@dcl/sdk/math'
 import { engine, Transform, VirtualCamera, MainCamera, TriggerArea, triggerAreaEventsSystem, Schemas, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, AvatarAttach, AvatarAnchorPointType, Entity, AvatarShape, Animator, AudioSource, VisibilityComponent } from '@dcl/sdk/ecs'
 import { CraftingStation } from './craftingStation'
 import { ProcessingStation } from './processingStation'
-import { StorageStation } from './storageStation'
 import { setMessage, getMessage, clearMessage, setGameOverState, resetCounters, hidePlayAgainButton, isGameOverActive } from './ui'
+import { ItemType, MESSAGE_DURATION, WORK_DURATION, CONFETTI_ROTATIONS, NPC_SPOTS } from './constants'
 
 // Función para configurar la cámara cinematográfica
 export function setupCinematicCamera() {
@@ -64,7 +64,6 @@ export function setupCinematicCamera() {
 
 // Variable para el temporizador del mensaje
 let messageTimer: number = 0
-const MESSAGE_DURATION = 3.0 // segundos
 
 // Sistema para manejar el temporizador del mensaje
 engine.addSystem((dt: number) => {
@@ -108,7 +107,7 @@ export function createWorkStations() {
       scale: Vector3.create(1.25, 1.25, 1.25)
     },
     'assets/asset-packs/potion_cauldron/Cauldron_01/Cauldron_01.glb', // modelPath - caldero
-    5.0, // workDuration
+    WORK_DURATION, // workDuration
     'assets/asset-packs/wooden_cup/Cup_01/Cup_01.glb', // modelPathResult
     ItemType.HERB, // neededItemId
     Vector3.create(4, 0, 11), // resultPosition - posición donde se crea el item resultante
@@ -125,7 +124,7 @@ export function createWorkStations() {
       scale: Vector3.create(1.5, 1.5, 1.5)
     },
     'assets/asset-packs/salamander_stove/Stove_01/Stove_01.glb', // modelPath
-    5.0, // workDuration
+    WORK_DURATION, // workDuration
     'assets/asset-packs/gold_bar/GoldBar_01/GoldBar_01.glb', // modelPathResult
     ItemType.ORE, // neededItemId
     Vector3.create(12, 0, 11), // resultPosition - posición donde se crea el item resultante
@@ -142,7 +141,7 @@ export function createWorkStations() {
       scale: Vector3.create(1, 1, 1)
     },
     'assets/asset-packs/anvil/Anvil_01/Anvil_01.glb', // modelPath
-    5.0, // workDuration
+    WORK_DURATION, // workDuration
     ItemType.AXE, // resultType
     ItemType.IRON, // neededItemId
     {
@@ -162,7 +161,7 @@ export function createWorkStations() {
       scale: Vector3.create(1,1, 1)
     },
     'assets/asset-packs/druid_wooden_round_table/WoodRoundTable_01/WoodRoundTable_01.glb', // modelPath
-    5.0, // workDuration
+    WORK_DURATION, // workDuration
     ItemType.POTION, // resultType
     ItemType.CUP, // neededItemId
     {
@@ -176,24 +175,15 @@ export function createWorkStations() {
 
 // Función para crear las entidades de confetti en cada spot de NPCs
 export function createConfettiItems() {
-  // Posiciones de los spots donde se paran los NPCs
-  const spotPositions = [
-    Vector3.create(9.75, 0, 15),
-    Vector3.create(8.1, 0, 15),
-    Vector3.create(6.5, 0, 15)
-  ]
-  
-  // Rotaciones para cada spot: spot 0 = -45, spot 1 = -90, spot 2 = -135
-  const spotRotations = [-45, -90, -135]
-  
-  for (let i = 0; i < spotPositions.length; i++) {
-    const spotPos = spotPositions[i]
+  // Usar posiciones de spots desde constantes
+  for (let i = 0; i < NPC_SPOTS.length; i++) {
+    const spotPos = NPC_SPOTS[i].position
     const confettiEntity = engine.addEntity()
     
     // Posicionar el confetti en el spot, un poco arriba
     Transform.create(confettiEntity, {
       position: Vector3.create(spotPos.x, 1.5, spotPos.z),
-      rotation: Quaternion.fromEulerDegrees(0, spotRotations[i], 0),
+      rotation: Quaternion.fromEulerDegrees(0, CONFETTI_ROTATIONS[i], 0),
       scale: Vector3.create(0.5, 0.5, 0.5)
     })
     
@@ -307,35 +297,45 @@ engine.addSystem((dt: number) => {
   }
 }, 0, 'confettiHideSystem')
 
-// Función para crear las StorageStations
+// Función para crear las StorageStations (ahora usando CraftingStation)
 export function createStorageStations() {
   // StorageStation al lado del caldero - entrega Herb (cofre de madera)
-  const herbStorage = new StorageStation(
+  const herbStorage = new CraftingStation(
     {
       position: Vector3.create(2.5, 0, 11), // Al lado izquierdo del bucket (bucket está en 5, 0, 10)
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
       scale: Vector3.create(1, 1, 1)
     },
     'assets/asset-packs/cardamon_spicebag/Spicesbag_01/Spicesbag_01.glb',
-    ItemType.HERB,
-    Vector3.create(2.5, 0, 10), // resultPosition - posición donde se crea el item resultante
+    0.0, // workDuration = 0 (inmediato)
+    ItemType.HERB, // resultType
+    '', // neededItemId vacío (no requiere item)
+    {
+      position: Vector3.create(2.5, 1, 11), // triggerArea position (pequeño, solo para compatibilidad)
+      scale: Vector3.create(0.1, 0.1, 0.1) // triggerArea scale mínimo
+    },
     showUIMessage
   )
-  storageStations.push(herbStorage)
+  craftingStations.push(herbStorage)
 
   // StorageStation al lado del stove - entrega Ore
-  const oreStorage = new StorageStation(
+  const oreStorage = new CraftingStation(
     {
       position: Vector3.create(13, 0, 11), // Al lado izquierdo del stove (stove está en 13, 0, 12)
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
       scale: Vector3.create(1, 1, 1)
     },
     'assets/asset-packs/mines_cart_coal/Mines Cart Coal.glb',
-    ItemType.ORE,
-    Vector3.create(13, 0, 10), // resultPosition - posición donde se crea el item resultante
+    0.0, // workDuration = 0 (inmediato)
+    ItemType.ORE, // resultType
+    '', // neededItemId vacío (no requiere item)
+    {
+      position: Vector3.create(13, 1, 11), // triggerArea position (pequeño, solo para compatibilidad)
+      scale: Vector3.create(0.1, 0.1, 0.1) // triggerArea scale mínimo
+    },
     showUIMessage
   )
-  storageStations.push(oreStorage)
+  craftingStations.push(oreStorage)
 }
 
 // Componente para identificar materiales attachados - Definido fuera de main() para evitar errores de "Engine sealed"
@@ -344,15 +344,7 @@ const MaterialSchema = {
 }
 export const Material = engine.defineComponent('Material', MaterialSchema)
 
-// Enum para los tipos de items
-export enum ItemType {
-  HERB = 'herb',
-  CUP = 'cup',
-  ORE = 'ore',
-  IRON = 'iron',
-  AXE = 'axe',
-  POTION = 'potion'
-}
+// ItemType está ahora en constants.ts
 
 // Función para eliminar el item attachado a la mano derecha
 function removeRightHandItem() {
@@ -416,6 +408,37 @@ export function createDiscardStation() {
 
 
 export function spawnResultItem(itemType: ItemType) {
+    // Verificar si el jugador ya tiene algo en la mano derecha
+    let hasItem = false
+    try {
+      // Obtener todos los NPCs para excluirlos
+      const npcAvatarIds = new Set<string>()
+      for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+        // Los NPCs tienen name vacío, el jugador tiene un name
+        if (avatarShape.name === '') {
+          npcAvatarIds.add(avatarShape.id)
+        }
+      }
+      
+      for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
+        if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
+          // Solo considerar items del jugador, no de NPCs
+          if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+            hasItem = true
+            break
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking right hand in spawnResultItem:', error)
+    }
+    
+    if (hasItem) {
+      console.warn(`Cannot spawn ${itemType}: player already has an item in right hand`)
+      showUIMessage('You already have something in your right hand')
+      return
+    }
+    
     // Attachear directamente a la mano derecha del jugador
     // (el ingrediente ya fue removido en handleInteraction)
 
@@ -426,13 +449,16 @@ export function spawnResultItem(itemType: ItemType) {
       rotation = Quaternion.fromEulerDegrees(180, 0, 0)
     }
     
+    // Obtener la escala correcta según el tipo de item
+    const scale = getItemScaleFromType(itemType)
+    
     // Crear nueva entidad para el resultado
     const resultEntity = engine.addEntity()
     
     Transform.create(resultEntity, {
       position: Vector3.create(0, 0, 0),
       rotation: rotation,
-      scale: Vector3.create(1, 1, 1)
+      scale: scale
     })
     
     // Cargar el modelo
@@ -507,8 +533,8 @@ export function getItemTypeFromModelPath(modelPath: string): ItemType {
   return ItemType.HERB // fallback
 }
 
-// Variable para almacenar la referencia de la entidad gameOver
-let gameOverEntity: Entity | null = null
+// Variable para almacenar la referencia de la entidad gameFinished
+let gameFinishedEntity: Entity | null = null
 
 // Variable para almacenar la referencia del NPCSpawner
 let npcSpawnerInstance: any = null
@@ -516,7 +542,6 @@ let npcSpawnerInstance: any = null
 // Arrays para almacenar referencias a las estaciones
 let processingStations: ProcessingStation[] = []
 let craftingStations: CraftingStation[] = []
-let storageStations: StorageStation[] = []
 
 // Array para almacenar las entidades de confetti en cada spot
 let confettiEntities: Entity[] = []
@@ -590,16 +615,10 @@ function resetAllStations() {
     }
   }
   
-  // Reiniciar StorageStations
-  for (const station of storageStations) {
-    if (station && typeof station.reset === 'function') {
-      station.reset()
-    }
-  }
 }
 
-// Función para mostrar el game over
-export function gameOver() {
+// Función para mostrar el game finished (game over o you win)
+export function gameFinished(winner: boolean) {
   // Ocultar mensajes de UI
   clearUIMessage()
   
@@ -622,19 +641,50 @@ export function gameOver() {
   // Reiniciar todas las estaciones
   resetAllStations()
   
-  // Crear entidad para el game over
-  gameOverEntity = engine.addEntity()
+  // Crear entidad para el game finished
+  gameFinishedEntity = engine.addEntity()
   
   // Configurar transform con posición (8, 2, 10) y escala (2, 2, 1)
-  Transform.create(gameOverEntity, {
+  Transform.create(gameFinishedEntity, {
     position: Vector3.create(8, 1, 10),
     rotation: Quaternion.fromEulerDegrees(22.5, 0, 0),
     scale: Vector3.create(1.5, 1.5, 1)
   })
   
-  // Cargar el modelo de game over
-  GltfContainer.create(gameOverEntity, {
-    src: 'assets/asset-packs/game_over/gameover2.glb'
+  // Cargar el modelo según si ganó o perdió
+  const modelPath = winner 
+    ? 'assets/asset-packs/you_win/win3.glb'
+    : 'assets/asset-packs/game_over/gameover2.glb'
+  
+  // Ruta del sonido según si ganó o perdió
+  const soundPath = winner
+    ? 'assets/asset-packs/you_win/wingame.mp3'
+    : 'assets/asset-packs/game_over/gameover.mp3'
+  
+  GltfContainer.create(gameFinishedEntity, {
+    src: modelPath
+  })
+  
+  // Agregar animador para reproducir la animación "Play" del modelo
+  Animator.create(gameFinishedEntity, {
+    states: [
+      {
+        clip: 'Play',
+        playing: true,
+        loop: false,
+        speed: 1.0,
+        weight: 1.0,
+        shouldReset: false
+      }
+    ]
+  })
+  
+  // Agregar AudioSource para reproducir el sonido
+  AudioSource.create(gameFinishedEntity, {
+    audioClipUrl: soundPath,
+    playing: true,
+    loop: false,
+    volume: 1.0
   })
   
   // Establecer el estado de game over en la UI
@@ -648,14 +698,14 @@ export function resetGame() {
   // Resetear contadores
   resetCounters()
   
-  // Eliminar la entidad del game over
-  if (gameOverEntity !== null) {
+  // Eliminar la entidad del game finished
+  if (gameFinishedEntity !== null) {
     try {
-      engine.removeEntity(gameOverEntity)
+      engine.removeEntity(gameFinishedEntity)
     } catch (error) {
-      console.error('Error al eliminar gameOverEntity:', error)
+      console.error('Error al eliminar gameFinishedEntity:', error)
     }
-    gameOverEntity = null
+    gameFinishedEntity = null
   }
   
   // Ocultar el botón Play Again y resetear el estado de game over

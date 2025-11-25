@@ -17,6 +17,7 @@ export enum EntityNames {
   Drawers_2_3_6 = "Drawers_2_3_6",
   Dreamwhisper_Codex = "Dreamwhisper Codex",
   Elixir = "Elixir",
+  Game_Over = "Game Over",
   Green_Potion = "Green Potion",
   Ground = "Ground",
   Invisible_Wall = "Invisible Wall",
@@ -42,10 +43,4 @@ export enum EntityNames {
   Table_2 = "Table_2",
   Tile_1 = "Tile 1",
   Tweezers = "Tweezers",
-  confetti = "confetti",
-  confetti_2 = "confetti_2",
-  confetti_2_3 = "confetti_2_3",
-  confetti_2_3_4 = "confetti_2_3_4",
-  confetti_3 = "confetti_3",
-  confetti_3_4 = "confetti_3_4",
 } 
