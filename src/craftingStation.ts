@@ -364,7 +364,7 @@ export class CraftingStation {
           // Check if there's still an item of the required type in hand
           const verifyItem = hasMaterialAttached(mutableStation.neededItemId)
           if (verifyItem.hasItem) {
-            console.warn(`Item ${mutableStation.neededItemId} still in hand, removing it before creating result`)
+            console.error(`Item ${mutableStation.neededItemId} still in hand, removing it before creating result`)
             removeRightHandItem()
           }
         }

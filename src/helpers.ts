@@ -483,7 +483,7 @@ export function spawnResultItem(itemType: ItemType) {
     const itemInfo = hasItemInRightHand()
     
     if (itemInfo.hasItem) {
-      console.warn(`Cannot spawn ${itemType}: player already has an item in right hand`)
+      console.error(`Cannot spawn ${itemType}: player already has an item in right hand`)
       showUIMessage('You already have something in your right hand')
       return
     }
