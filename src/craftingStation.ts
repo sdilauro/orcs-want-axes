@@ -1,6 +1,6 @@
 import { Vector3, Quaternion, Color4 } from '@dcl/sdk/math'
 import { engine, Transform, Entity, GltfContainer, MeshCollider, ColliderLayer, pointerEventsSystem, InputAction, Schemas, AvatarAttach, AvatarAnchorPointType, MeshRenderer, Material as MaterialECS, Billboard, BillboardMode, TextShape, TriggerArea, triggerAreaEventsSystem, AvatarShape } from '@dcl/sdk/ecs'
-import { Material, spawnResultItem } from './helpers'
+import { Material, spawnResultItem, hasMaterialAttached, removeRightHandItem, hasItemInRightHand } from './helpers'
 import { ItemType } from './constants'
 import { isGameOverActive } from './ui'
 
@@ -12,74 +12,17 @@ type TransformData = {
   parent?: Entity
 }
 
-// Componente para almacenar el estado de la estación
+// Component to store the station state
 const CraftingStationSchema = {
   isWorking: Schemas.Boolean,
-  workDuration: Schemas.Number, // Duración del trabajo en segundos
-  workProgress: Schemas.Number, // Progreso del trabajo (0 a 1)
-  resultType: Schemas.String, // Ruta del modelo resultante
-  neededItemId: Schemas.String, // ID del item necesario
-  playerInArea: Schemas.Boolean // Si el jugador está en el trigger area
+  workDuration: Schemas.Number, // Work duration in seconds
+  workProgress: Schemas.Number, // Work progress (0 to 1)
+  resultType: Schemas.String, // Resulting model path
+  neededItemId: Schemas.String, // Required item ID
+  playerInArea: Schemas.Boolean // Whether the player is in the trigger area
 }
 const CraftingStationComponent = engine.defineComponent('CraftingStation', CraftingStationSchema)
 
-// Función helper para verificar si el jugador tiene un material específico attachado
-function hasMaterialAttached(materialId: string): boolean {
-  try {
-    // Obtener todos los NPCs para excluirlos
-    const npcAvatarIds = new Set<string>()
-    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
-      // Los NPCs tienen name vacío, el jugador tiene un name
-      if (avatarShape.name === '') {
-        npcAvatarIds.add(avatarShape.id)
-      }
-    }
-    
-    for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
-      if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        // Solo considerar items del jugador, no de NPCs
-        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
-          if (Material.has(entity)) {
-            const item = Material.get(entity)
-            if (item && item.id === materialId) {
-              return true
-            }
-          }
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error en hasMaterialAttached:', error)
-  }
-  return false
-}
-
-// Función helper para eliminar el material attachado a la mano derecha del jugador
-function removeRightHandItem(): boolean {
-  try {
-    // Obtener todos los NPCs para excluirlos
-    const npcAvatarIds = new Set<string>()
-    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
-      // Los NPCs tienen name vacío, el jugador tiene un name
-      if (avatarShape.name === '') {
-        npcAvatarIds.add(avatarShape.id)
-      }
-    }
-    
-    for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
-      if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        // Solo eliminar si NO está attachado a un NPC (es decir, es del jugador)
-        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
-          engine.removeEntity(entity)
-          return true
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error en removeRightHandItem:', error)
-  }
-  return false
-}
 
 
 
@@ -99,10 +42,10 @@ export class CraftingStation {
     triggerArea: { position: Vector3, scale: Vector3 },
     showMessage?: (message: string) => void
   ) {
-    // Crear la entidad
+    // Create the entity
     this.entity = engine.addEntity()
     
-    // Aplicar transform
+    // Apply transform
     Transform.create(this.entity, {
       position: transform.position,
       rotation: transform.rotation || Quaternion.fromEulerDegrees(0, 0, 0),
@@ -110,17 +53,17 @@ export class CraftingStation {
       parent: transform.parent
     })
     
-    // Cargar el modelo
+    // Load the model
     GltfContainer.create(this.entity, {
       src: modelPath,
       visibleMeshesCollisionMask: ColliderLayer.CL_POINTER, // Removed ColliderLayer.CL_SCENE (does not exist)
       invisibleMeshesCollisionMask: 3
     })
     
-    // Agregar collider para interacción
+    // Add collider for interaction
     MeshCollider.setBox(this.entity, ColliderLayer.CL_POINTER)
     
-    // Crear trigger area
+    // Create trigger area
     this.triggerAreaEntity = engine.addEntity()
     Transform.create(this.triggerAreaEntity, {
       position: triggerArea.position,
@@ -128,7 +71,7 @@ export class CraftingStation {
     })
     TriggerArea.setBox(this.triggerAreaEntity)
     
-    // Configurar eventos del trigger area
+    // Configure trigger area events
     triggerAreaEventsSystem.onTriggerEnter(this.triggerAreaEntity, () => {
       CraftingStationComponent.getMutable(this.entity).playerInArea = true
     })
@@ -136,7 +79,7 @@ export class CraftingStation {
     triggerAreaEventsSystem.onTriggerExit(this.triggerAreaEntity, () => {
       const station = CraftingStationComponent.getMutable(this.entity)
       station.playerInArea = false
-      // Si estaba trabajando, cancelar
+      // If it was working, cancel
       if (station.isWorking) {
         station.isWorking = false
         station.workProgress = 0
@@ -147,21 +90,21 @@ export class CraftingStation {
       }
     })
     
-    // Crear componente de estación
+    // Create station component
     CraftingStationComponent.create(this.entity, {
       isWorking: false,
       workDuration: workDuration,
       workProgress: 0,
-      resultType: resultType as string, // Guardar como string en el componente
+      resultType: resultType as string, // Save as string in the component
       neededItemId: neededItemId,
       playerInArea: false
     })
     
-    // Crear nombre único para el sistema
+    // Create unique name for the system
     this.workSystemName = `craftingStation-${this.entity}`
     this.showMessage = showMessage
     
-    // Configurar interacción
+    // Configure interaction
     this.setupInteraction()
   }
 
@@ -187,14 +130,14 @@ export class CraftingStation {
   }
 
   private handleInteraction() {
-    // Verificar si el juego está en estado de game over
+    // Check if the game is in game over state
     if (isGameOverActive()) {
       return
     }
     
     const station = CraftingStationComponent.get(this.entity)
     
-    // Verificar si el jugador está en el área (solo si requiere item)
+    // Check if the player is in the area (only if item is required)
     if (station.neededItemId && station.neededItemId !== '' && !station.playerInArea) {
       if (this.showMessage) {
         this.showMessage('You must be in the crafting area!')
@@ -202,7 +145,7 @@ export class CraftingStation {
       return
     }
     
-    // Verificar si ya está trabajando
+    // Check if it's already working
     if (station.isWorking) {
       if (this.showMessage) {
         this.showMessage('Station is already working!')
@@ -210,16 +153,17 @@ export class CraftingStation {
       return
     }
     
-    // Verificar si el jugador tiene el item necesario (solo si se requiere)
+    // Check if the player has the required item (only if required)
     if (station.neededItemId && station.neededItemId !== '') {
-      if (!hasMaterialAttached(station.neededItemId)) {
+      const itemInfo = hasMaterialAttached(station.neededItemId)
+      if (!itemInfo.hasItem) {
         if (this.showMessage) {
           this.showMessage(`You need ${station.neededItemId} in your right hand`)
         }
         return
       }
       
-      // Remover el item del jugador y verificar que se eliminó correctamente
+      // Remove the item from the player and verify it was removed correctly
       const itemRemoved = removeRightHandItem()
       if (!itemRemoved) {
         if (this.showMessage) {
@@ -229,8 +173,9 @@ export class CraftingStation {
         return
       }
       
-      // Verificar que el item se haya eliminado antes de continuar
-      if (hasMaterialAttached(station.neededItemId)) {
+      // Verify that the item was removed before continuing
+      const verifyRemoval = hasMaterialAttached(station.neededItemId)
+      if (verifyRemoval.hasItem) {
         if (this.showMessage) {
           this.showMessage('Error: Item still in hand after removal')
         }
@@ -239,34 +184,12 @@ export class CraftingStation {
       }
     }
     
-    // Si workDuration es 0, completar inmediatamente
+    // If workDuration is 0, complete immediately
     if (station.workDuration === 0) {
-      // Verificar que el jugador no tenga ya un item en la mano
-      let hasItem = false
-      try {
-        // Obtener todos los NPCs para excluirlos
-        const npcAvatarIds = new Set<string>()
-        for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
-          // Los NPCs tienen name vacío, el jugador tiene un name
-          if (avatarShape.name === '') {
-            npcAvatarIds.add(avatarShape.id)
-          }
-        }
-        
-        for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
-          if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-            // Solo considerar items del jugador, no de NPCs
-            if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
-              hasItem = true
-              break
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error checking right hand:', error)
-      }
+      // Check that the player doesn't already have an item in hand
+      const itemInfo = hasItemInRightHand()
       
-      if (hasItem) {
+      if (itemInfo.hasItem) {
         if (this.showMessage) {
           this.showMessage('You already have something in your right hand')
         }
@@ -282,14 +205,14 @@ export class CraftingStation {
       return
     }
     
-    // Iniciar trabajo
+    // Start work
     CraftingStationComponent.getMutable(this.entity).isWorking = true
     CraftingStationComponent.getMutable(this.entity).workProgress = 0
     
-    // Mostrar spinner
+    // Show spinner
     this.showSpinner()
     
-    // Iniciar sistema de trabajo
+    // Start work system
     this.startWorkSystem()
     
     if (this.showMessage) {
@@ -298,7 +221,7 @@ export class CraftingStation {
   }
   
   private getResourceTypeName(resourceType: string): string {
-    // Convertir el enum value a un nombre legible
+    // Convert the enum value to a readable name
     switch (resourceType) {
       case ItemType.HERB:
         return 'Herb'
@@ -319,7 +242,7 @@ export class CraftingStation {
   }
 
   private showSpinner() {
-    // Crear entidad del spinner como hijo de la estación
+    // Create spinner entity as child of the station
     this.spinnerEntity = engine.addEntity()
     
     const stationTransform = Transform.get(this.entity)
@@ -330,27 +253,27 @@ export class CraftingStation {
       1 / stationScale.z
     )
     
-    // Inicializar con escala Y = 1 (se reducirá conforme avance el progreso)
+    // Initialize with Y scale = 1 (will decrease as progress advances)
     Transform.create(this.spinnerEntity, {
-      position: Vector3.create(0, 3, 0), // 3 metros arriba de la estación
-      scale: Vector3.create(inverseScale.x, inverseScale.y, inverseScale.z), // Escala Y inicial = 1
+      position: Vector3.create(0, 3, 0), // 3 meters above the station
+      scale: Vector3.create(inverseScale.x, inverseScale.y, inverseScale.z), // Initial Y scale = 1
       parent: this.entity
     })
     
-    // Crear un círculo/plano como spinner
+    // Create a circle/plane as spinner
     MeshRenderer.setPlane(this.spinnerEntity)
     MaterialECS.setPbrMaterial(this.spinnerEntity, {
-      albedoColor: Color4.create(1, 1, 0, 0.8), // Amarillo semitransparente
-      emissiveColor: Color4.create(1, 1, 0, 0.5) // Brillo amarillo
+      albedoColor: Color4.create(1, 1, 0, 0.8), // Semi-transparent yellow
+      emissiveColor: Color4.create(1, 1, 0, 0.5) // Yellow glow
     })
     
-    // Hacer que el spinner siempre mire a la cámara
+    // Make the spinner always face the camera
     Billboard.create(this.spinnerEntity, {
       billboardMode: BillboardMode.BM_Y
     })
     
-    // Rotar el spinner continuamente
-    const rotationSpeed = 360 // grados por segundo
+    // Rotate the spinner continuously
+    const rotationSpeed = 360 // degrees per second
     let currentYRotation = 0
     engine.addSystem((dt: number) => {
       if (!Transform.has(this.spinnerEntity)) {
@@ -373,11 +296,11 @@ export class CraftingStation {
   }
 
   private startWorkSystem() {
-    // Verificar si el sistema ya existe para evitar duplicados
+    // Check if the system already exists to avoid duplicates
     try {
       engine.removeSystem(this.workSystemName)
     } catch (e) {
-      // El sistema no existe, está bien
+      // The system doesn't exist, that's fine
     }
     
     engine.addSystem((dt: number) => {
@@ -388,7 +311,7 @@ export class CraftingStation {
       
       const station = CraftingStationComponent.get(this.entity)
       
-      // Si no está trabajando, remover el sistema y salir
+      // If not working, remove the system and exit
       if (!station.isWorking) {
         engine.removeSystem(this.workSystemName)
         return
@@ -396,7 +319,7 @@ export class CraftingStation {
       
       const mutableStation = CraftingStationComponent.getMutable(this.entity)
       
-      // Verificar que el jugador siga en el área (solo si requiere item)
+      // Verify that the player is still in the area (only if item is required)
       if (mutableStation.neededItemId && mutableStation.neededItemId !== '' && !mutableStation.playerInArea) {
         mutableStation.isWorking = false
         mutableStation.workProgress = 0
@@ -405,10 +328,10 @@ export class CraftingStation {
         return
       }
       
-      // Actualizar progreso
+      // Update progress
       mutableStation.workProgress += dt / mutableStation.workDuration
       
-      // Actualizar escala Y del spinner basándose en el progreso (de 1 a 0)
+      // Update spinner Y scale based on progress (from 1 to 0)
       if (Transform.has(this.spinnerEntity)) {
         const spinnerTransform = Transform.getMutable(this.spinnerEntity)
         const stationTransform = Transform.get(this.entity)
@@ -418,7 +341,7 @@ export class CraftingStation {
           1 / stationScale.y,
           1 / stationScale.z
         )
-        // Escala Y va de 1 a 0 conforme el progreso va de 0 a 1
+        // Y scale goes from 1 to 0 as progress goes from 0 to 1
         const progressYScale = 1 - mutableStation.workProgress
         spinnerTransform.scale = Vector3.create(
           inverseScale.x,
@@ -427,26 +350,27 @@ export class CraftingStation {
         )
       }
       
-      // Si el trabajo está completo
+      // If work is complete
       if (mutableStation.workProgress >= 1.0) {
         mutableStation.isWorking = false
         mutableStation.workProgress = 0
         
-        // Ocultar spinner
+        // Hide spinner
         this.hideSpinner()
         
-        // Asegurarse de que no haya items en la mano antes de crear el nuevo
-        // (por si acaso el item no se eliminó correctamente al inicio)
+        // Make sure there are no items in hand before creating the new one
+        // (in case the item wasn't removed correctly at the start)
         if (mutableStation.neededItemId && mutableStation.neededItemId !== '') {
-          // Verificar si todavía hay un item del tipo necesario en la mano
-          if (hasMaterialAttached(mutableStation.neededItemId)) {
+          // Check if there's still an item of the required type in hand
+          const verifyItem = hasMaterialAttached(mutableStation.neededItemId)
+          if (verifyItem.hasItem) {
             console.warn(`Item ${mutableStation.neededItemId} still in hand, removing it before creating result`)
             removeRightHandItem()
           }
         }
         
-        // Crear la entidad resultado en el área cercana
-        // Asegurarse de que resultType sea un ItemType válido
+        // Create the result entity in the nearby area
+        // Make sure resultType is a valid ItemType
         const resultItemType = mutableStation.resultType as ItemType
         if (resultItemType && Object.values(ItemType).includes(resultItemType)) {
           spawnResultItem(resultItemType)
@@ -457,7 +381,7 @@ export class CraftingStation {
           }
         }
         
-        // Remover el sistema de trabajo
+        // Remove the work system
         engine.removeSystem(this.workSystemName)
         
         if (this.showMessage) {
@@ -469,7 +393,7 @@ export class CraftingStation {
 
   
 
-  // Método para destruir la estación
+  // Method to destroy the station
   public destroy() {
     engine.removeSystem(this.workSystemName)
     engine.removeSystem(`spinnerRotation-${this.entity}`)
@@ -478,23 +402,23 @@ export class CraftingStation {
     engine.removeEntity(this.entity)
   }
 
-  // Método para reiniciar la estación
+  // Method to reset the station
   public reset() {
-    // Detener el trabajo si está en progreso
+    // Stop work if in progress
     if (CraftingStationComponent.has(this.entity)) {
       const station = CraftingStationComponent.getMutable(this.entity)
       station.isWorking = false
       station.workProgress = 0
     }
     
-    // Ocultar spinner si existe
+    // Hide spinner if it exists
     this.hideSpinner()
     
-    // Eliminar sistema de trabajo
+    // Remove work system
     try {
       engine.removeSystem(this.workSystemName)
     } catch (e) {
-      // El sistema no existe, está bien
+      // The system doesn't exist, that's fine
     }
   }
 }

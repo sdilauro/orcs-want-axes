@@ -5,52 +5,52 @@ import { ProcessingStation } from './processingStation'
 import { setMessage, getMessage, clearMessage, setGameOverState, resetCounters, hidePlayAgainButton, isGameOverActive } from './ui'
 import { ItemType, MESSAGE_DURATION, WORK_DURATION, CONFETTI_ROTATIONS, NPC_SPOTS } from './constants'
 
-// Función para configurar la cámara cinematográfica
+// Function to set up the cinematic camera
 export function setupCinematicCamera() {
-  // Crear entidad para la cámara cinematográfica
+  // Create entity for the cinematic camera
   const cinematicCamera = engine.addEntity()
 
-  // Posicionar la cámara en la frontera de la escena (8, 20, 0) y apuntar al centro
-  // Para una escena de 16x16, el centro está en (8, 0, 8)
-  const cameraPosition = Vector3.create(8, 4, 2) // Frontera sur de la escena, 20m arriba
-  const targetPoint = Vector3.create(8, 1.5, 8) // Centro de la escena
+  // Position the camera at the scene boundary (8, 20, 0) and point to the center
+  // For a 16x16 scene, the center is at (8, 0, 8)
+  const cameraPosition = Vector3.create(8, 4, 2) // South boundary of the scene, 20m up
+  const targetPoint = Vector3.create(8, 1.5, 8) // Center of the scene
   
-  // Calcular dirección desde la cámara hacia el centro
+  // Calculate direction from camera to center
   const direction = Vector3.subtract(targetPoint, cameraPosition)
   const normalizedDirection = Vector3.normalize(direction)
   
-  // Usar lookRotation para apuntar hacia el centro de la escena
+  // Use lookRotation to point towards the center of the scene
   Transform.create(cinematicCamera, {
     position: cameraPosition,
     rotation: Quaternion.lookRotation(normalizedDirection)
   })
 
-  // Configurar la cámara virtual cinematográfica
+  // Configure the virtual cinematic camera
   VirtualCamera.create(cinematicCamera, {
     defaultTransition: {
       transitionMode: VirtualCamera.Transition.Speed(5.0)
     }
   })
 
-  // Activar la cámara virtual inmediatamente
+  // Activate the virtual camera immediately
   MainCamera.getMutable(engine.CameraEntity).virtualCameraEntity = cinematicCamera
 
-  // Crear una zona de trigger que cubre toda la escena para mantener la cámara activa
+  // Create a trigger zone that covers the entire scene to keep the camera active
   const cameraTriggerArea = engine.addEntity()
   Transform.create(cameraTriggerArea, {
-    position: Vector3.create(8, 0, 8), // Centro de la escena
-    scale: Vector3.create(16, 20, 16) // Cubre toda la escena (16x16) y altura suficiente
+    position: Vector3.create(8, 0, 8), // Center of the scene
+    scale: Vector3.create(16, 20, 16) // Covers the entire scene (16x16) and sufficient height
   })
   
-  // Crear el área de trigger (box)
+  // Create the trigger area (box)
   TriggerArea.setBox(cameraTriggerArea)
 
-  // Cuando el jugador entra en el área, activar la cámara cinematográfica
+  // When the player enters the area, activate the cinematic camera
   triggerAreaEventsSystem.onTriggerEnter(cameraTriggerArea, () => {
     MainCamera.getMutable(engine.CameraEntity).virtualCameraEntity = cinematicCamera
   })
 
-  // Mantener la cámara activa mientras el jugador está en el área
+  // Keep the camera active while the player is in the area
   triggerAreaEventsSystem.onTriggerStay(cameraTriggerArea, () => {
     const mainCamera = MainCamera.getMutable(engine.CameraEntity)
     if (mainCamera.virtualCameraEntity !== cinematicCamera) {
@@ -58,8 +58,8 @@ export function setupCinematicCamera() {
     }
   })
 
-  // La cámara está configurada como estática y no seguirá al personaje
-  // La posición y rotación están fijas, creando una vista topdown cinematográfica
+  // The camera is configured as static and will not follow the character
+  // Position and rotation are fixed, creating a topdown cinematic view
 }
 
 // Variable para el temporizador del mensaje
@@ -77,46 +77,46 @@ engine.addSystem((dt: number) => {
       }
     }
   } catch (error) {
-    // Silenciar errores para no detener la ejecución
-    console.error('Error en messageTimerSystem:', error)
+    // Silence errors to not stop execution
+    console.error('Error in messageTimerSystem:', error)
     clearMessage()
     messageTimer = 0
   }
 }, 0, 'messageTimerSystem')
 
-// Función para mostrar un mensaje en la UI inferior de la pantalla
+// Function to show a message in the bottom UI of the screen
 export function showUIMessage(message: string) {
   setMessage(message)
   messageTimer = 0
 }
 
-// Función para limpiar el mensaje de la UI
+// Function to clear the UI message
 export function clearUIMessage() {
   clearMessage()
   messageTimer = 0
 }
 
-// Función para crear las estaciones de trabajo
+// Function to create work stations
 export function createWorkStations() {
-  // ProcessingStation 1: Cauldron (Caldero)
-  // Requiere Herb, devuelve Cup al piso
+  // ProcessingStation 1: Cauldron
+  // Requires Herb, returns Cup to the floor
   const cauldron = new ProcessingStation(
     {
-      position: Vector3.create(3, 0, 12), // Posición del caldero
+      position: Vector3.create(3, 0, 12), // Cauldron position
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
       scale: Vector3.create(1.25, 1.25, 1.25)
     },
-    'assets/asset-packs/potion_cauldron/Cauldron_01/Cauldron_01.glb', // modelPath - caldero
+    'assets/asset-packs/potion_cauldron/Cauldron_01/Cauldron_01.glb', // modelPath - cauldron
     WORK_DURATION, // workDuration
     'assets/asset-packs/wooden_cup/Cup_01/Cup_01.glb', // modelPathResult
     ItemType.HERB, // neededItemId
-    Vector3.create(4, 0, 11), // resultPosition - posición donde se crea el item resultante
+    Vector3.create(4, 0, 11), // resultPosition - position where the resulting item is created
     showUIMessage
   )
   processingStations.push(cauldron)
 
   // ProcessingStation 2: Stove
-  // Requiere Ore, devuelve Iron al piso
+  // Requires Ore, returns Iron to the floor
   const stove = new ProcessingStation(
     {
       position: Vector3.create(13, 0, 12),
@@ -127,13 +127,13 @@ export function createWorkStations() {
     WORK_DURATION, // workDuration
     'assets/asset-packs/gold_bar/GoldBar_01/GoldBar_01.glb', // modelPathResult
     ItemType.ORE, // neededItemId
-    Vector3.create(12, 0, 11), // resultPosition - posición donde se crea el item resultante
+    Vector3.create(12, 0, 11), // resultPosition - position where the resulting item is created
     showUIMessage
   )
   processingStations.push(stove)
 
-  // CraftingStation 1: Anvil (Yunque)
-  // Requiere Iron, elimina Iron y attachea Axe
+  // CraftingStation 1: Anvil
+  // Requires Iron, removes Iron and attaches Axe
   const anvil = new CraftingStation(
     {
       position: Vector3.create(10, 0, 10),
@@ -152,8 +152,8 @@ export function createWorkStations() {
   )
   craftingStations.push(anvil)
 
-  // CraftingStation 2: Potion Table (Mesa de Poción)
-  // Requiere Cup, elimina Cup y attachea Potion
+  // CraftingStation 2: Potion Table
+  // Requires Cup, removes Cup and attaches Potion
   const potionTable = new CraftingStation(
     {
       position: Vector3.create(6, 0, 10),
@@ -173,28 +173,28 @@ export function createWorkStations() {
   craftingStations.push(potionTable)
 }
 
-// Función para crear las entidades de confetti en cada spot de NPCs
+// Function to create confetti entities at each NPC spot
 export function createConfettiItems() {
-  // Usar posiciones de spots desde constantes
+  // Use spot positions from constants
   for (let i = 0; i < NPC_SPOTS.length; i++) {
     const spotPos = NPC_SPOTS[i].position
     const confettiEntity = engine.addEntity()
     
-    // Posicionar el confetti en el spot, un poco arriba
+    // Position the confetti at the spot, slightly above
     Transform.create(confettiEntity, {
       position: Vector3.create(spotPos.x, 1.5, spotPos.z),
       rotation: Quaternion.fromEulerDegrees(0, CONFETTI_ROTATIONS[i], 0),
       scale: Vector3.create(0.5, 0.5, 0.5)
     })
     
-    // Cargar el modelo de confetti
+    // Load the confetti model
     GltfContainer.create(confettiEntity, {
       src: 'assets/asset-packs/confetti/confetti.glb',
       visibleMeshesCollisionMask: 0,
       invisibleMeshesCollisionMask: 0
     })
     
-    // Agregar animador con la animación "Animation"
+    // Add animator with the "Animation" animation
     Animator.create(confettiEntity, {
       states: [
         {
@@ -208,7 +208,7 @@ export function createConfettiItems() {
       ]
     })
     
-    // Agregar fuente de audio
+    // Add audio source
     AudioSource.create(confettiEntity, {
       audioClipUrl: 'assets/asset-packs/confetti/fireworkexplode.mp3',
       playing: false,
@@ -216,7 +216,7 @@ export function createConfettiItems() {
       volume: 1.0
     })
     
-    // Inicialmente oculto
+    // Initially hidden
     VisibilityComponent.create(confettiEntity, {
       visible: false
     })
@@ -225,17 +225,17 @@ export function createConfettiItems() {
   }
 }
 
-// Función para activar el confetti en un spot específico
+// Function to activate confetti at a specific spot
 export function activateConfettiAtSpot(spotId: number) {
   if (spotId >= 0 && spotId < confettiEntities.length) {
     const confettiEntity = confettiEntities[spotId]
     
-    // Mostrar el confetti
+    // Show the confetti
     if (VisibilityComponent.has(confettiEntity)) {
       VisibilityComponent.getMutable(confettiEntity).visible = true
     }
     
-    // Reproducir animación
+    // Play animation
     if (Animator.has(confettiEntity)) {
       const animator = Animator.getMutable(confettiEntity)
       if (animator.states.length > 0) {
@@ -243,11 +243,11 @@ export function activateConfettiAtSpot(spotId: number) {
       }
     }
     
-    // Reproducir sonido - detener primero y luego iniciar para asegurar reproducción
+    // Play sound - stop first and then start to ensure playback
     if (AudioSource.has(confettiEntity)) {
       const audioSource = AudioSource.getMutable(confettiEntity)
-      audioSource.playing = false // Detener primero
-      // Usar createOrReplace para reiniciar el audio
+      audioSource.playing = false // Stop first
+      // Use createOrReplace to restart the audio
       AudioSource.createOrReplace(confettiEntity, {
         audioClipUrl: 'assets/asset-packs/confetti/fireworkexplode.mp3',
         playing: true,
@@ -255,7 +255,7 @@ export function activateConfettiAtSpot(spotId: number) {
         volume: 1.0
       })
     } else {
-      // Si no existe, crearlo
+      // If it doesn't exist, create it
       AudioSource.create(confettiEntity, {
         audioClipUrl: 'assets/asset-packs/confetti/fireworkexplode.mp3',
         playing: true,
@@ -264,20 +264,20 @@ export function activateConfettiAtSpot(spotId: number) {
       })
     }
     
-    // Registrar el tiempo de activación para ocultar después de 10 segundos
+    // Register activation time to hide after 10 seconds
     confettiActivationTime.set(confettiEntity, Date.now())
   }
 }
 
-// Sistema para ocultar confetti después de 3 segundos
+// System to hide confetti after 3 seconds
 engine.addSystem((dt: number) => {
   const currentTime = Date.now()
   const confettiToHide: Entity[] = []
   
   for (const [entity, activationTime] of confettiActivationTime.entries()) {
     const elapsed = currentTime - activationTime
-    if (elapsed >= 3000) { // 3 segundos
-      // Ocultar el confetti
+    if (elapsed >= 3000) { // 3 seconds
+      // Hide the confetti
       if (VisibilityComponent.has(entity)) {
         VisibilityComponent.getMutable(entity).visible = false
       }
@@ -291,96 +291,167 @@ engine.addSystem((dt: number) => {
     }
   }
   
-  // Limpiar el map
+  // Clean up the map
   for (const entity of confettiToHide) {
     confettiActivationTime.delete(entity)
   }
 }, 0, 'confettiHideSystem')
 
-// Función para crear las StorageStations (ahora usando CraftingStation)
+// Function to create StorageStations (now using CraftingStation)
 export function createStorageStations() {
-  // StorageStation al lado del caldero - entrega Herb (cofre de madera)
+  // StorageStation next to the cauldron - delivers Herb (wooden chest)
   const herbStorage = new CraftingStation(
     {
-      position: Vector3.create(2.5, 0, 11), // Al lado izquierdo del bucket (bucket está en 5, 0, 10)
+      position: Vector3.create(2.5, 0, 11), // To the left of the bucket (bucket is at 5, 0, 10)
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
       scale: Vector3.create(1, 1, 1)
     },
     'assets/asset-packs/cardamon_spicebag/Spicesbag_01/Spicesbag_01.glb',
-    0.0, // workDuration = 0 (inmediato)
+    0.0, // workDuration = 0 (immediate)
     ItemType.HERB, // resultType
-    '', // neededItemId vacío (no requiere item)
+    '', // neededItemId empty (no item required)
     {
-      position: Vector3.create(2.5, 1, 11), // triggerArea position (pequeño, solo para compatibilidad)
-      scale: Vector3.create(0.1, 0.1, 0.1) // triggerArea scale mínimo
+      position: Vector3.create(2.5, 1, 11), // triggerArea position (small, only for compatibility)
+      scale: Vector3.create(0.1, 0.1, 0.1) // triggerArea minimum scale
     },
     showUIMessage
   )
   craftingStations.push(herbStorage)
 
-  // StorageStation al lado del stove - entrega Ore
+  // StorageStation next to the stove - delivers Ore
   const oreStorage = new CraftingStation(
     {
-      position: Vector3.create(13, 0, 11), // Al lado izquierdo del stove (stove está en 13, 0, 12)
+      position: Vector3.create(13, 0, 11), // To the left of the stove (stove is at 13, 0, 12)
       rotation: Quaternion.fromEulerDegrees(0, 0, 0),
       scale: Vector3.create(1, 1, 1)
     },
     'assets/asset-packs/mines_cart_coal/Mines Cart Coal.glb',
-    0.0, // workDuration = 0 (inmediato)
+    0.0, // workDuration = 0 (immediate)
     ItemType.ORE, // resultType
-    '', // neededItemId vacío (no requiere item)
+    '', // neededItemId empty (no item required)
     {
-      position: Vector3.create(13, 1, 11), // triggerArea position (pequeño, solo para compatibilidad)
-      scale: Vector3.create(0.1, 0.1, 0.1) // triggerArea scale mínimo
+      position: Vector3.create(13, 1, 11), // triggerArea position (small, only for compatibility)
+      scale: Vector3.create(0.1, 0.1, 0.1) // triggerArea minimum scale
     },
     showUIMessage
   )
   craftingStations.push(oreStorage)
 }
 
-// Componente para identificar materiales attachados - Definido fuera de main() para evitar errores de "Engine sealed"
+// Component to identify attached materials - Defined outside main() to avoid "Engine sealed" errors
 const MaterialSchema = {
   id: Schemas.String
 }
 export const Material = engine.defineComponent('Material', MaterialSchema)
 
-// ItemType está ahora en constants.ts
+// ItemType is now in constants.ts
 
-// Función para eliminar el item attachado a la mano derecha
-function removeRightHandItem() {
+// Helper function to get all NPC avatar IDs (NPCs have empty name)
+export function getNPCAvatarIds(): Set<string> {
+  const npcAvatarIds = new Set<string>()
   try {
-    for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
-      if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-        engine.removeEntity(entity)
-        return true
+    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
+      // NPCs have empty name, the player has a name
+      if (avatarShape.name === '') {
+        npcAvatarIds.add(avatarShape.id)
       }
     }
   } catch (error) {
-    console.error('Error en removeRightHandItem:', error)
+    console.error('Error in getNPCAvatarIds:', error)
+  }
+  return npcAvatarIds
+}
+
+// Helper function to check if the player has any item in right hand
+// Returns both a boolean and the entity/itemId (if found) for flexibility
+export function hasItemInRightHand(): { hasItem: boolean, itemEntity?: Entity, itemId?: string } {
+  try {
+    const npcAvatarIds = getNPCAvatarIds()
+    
+    for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
+      if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
+        // Only consider player items, not NPCs
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          if (Material.has(entity)) {
+            const item = Material.get(entity)
+            return { hasItem: true, itemEntity: entity, itemId: item?.id }
+          }
+          return { hasItem: true, itemEntity: entity }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in hasItemInRightHand:', error)
+  }
+  return { hasItem: false }
+}
+
+// Helper function to check if the player has a specific material attached
+// Returns both a boolean and the entity (if found) for flexibility
+export function hasMaterialAttached(materialId: string): { hasItem: boolean, itemEntity?: Entity } {
+  try {
+    const npcAvatarIds = getNPCAvatarIds()
+    
+    for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
+      if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
+        // Only consider player items, not NPCs
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          if (Material.has(entity)) {
+            const item = Material.get(entity)
+            if (item && item.id === materialId) {
+              return { hasItem: true, itemEntity: entity }
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in hasMaterialAttached:', error)
+  }
+  return { hasItem: false }
+}
+
+// Function to remove the item attached to the player's right hand
+// Returns true if an item was removed, false otherwise
+export function removeRightHandItem(): boolean {
+  try {
+    const npcAvatarIds = getNPCAvatarIds()
+    
+    for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
+      if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
+        // Only remove if NOT attached to an NPC (i.e., it's the player's)
+        if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
+          engine.removeEntity(entity)
+          return true
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in removeRightHandItem:', error)
   }
   return false
 }
 
-// Función para crear la entidad de descarte de items
+// Function to create the item discard entity
 export function createDiscardStation() {
   const discardEntity = engine.addEntity()
   
-  // Posicionar la entidad en el centro de la parcela
+  // Position the entity at the center of the parcel
   Transform.create(discardEntity, {
-    position: Vector3.create(2.5, 0, 8), // Centro de la parcela (16x16)
+    position: Vector3.create(2.5, 0, 8), // Center of the parcel (16x16)
     rotation: Quaternion.fromEulerDegrees(0, 0, 0),
     scale: Vector3.create(1, 1, 1)
   })
   
-  // Cargar el modelo de bucket
+  // Load the bucket model
   GltfContainer.create(discardEntity, {
     src: 'assets/asset-packs/bucket/Bucket.glb'
   })
   
-  // Agregar collider para interacción
+  // Add collider for interaction
   MeshCollider.setBox(discardEntity, ColliderLayer.CL_POINTER)
   
-  // Configurar interacción
+  // Configure interaction
   pointerEventsSystem.onPointerDown(
     {
       entity: discardEntity,
@@ -391,7 +462,7 @@ export function createDiscardStation() {
       }
     },
     () => {
-      // Verificar si el juego está en estado de game over
+      // Check if the game is in game over state
       if (isGameOverActive()) {
         return
       }
@@ -408,51 +479,29 @@ export function createDiscardStation() {
 
 
 export function spawnResultItem(itemType: ItemType) {
-    // Verificar si el jugador ya tiene algo en la mano derecha
-    let hasItem = false
-    try {
-      // Obtener todos los NPCs para excluirlos
-      const npcAvatarIds = new Set<string>()
-      for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
-        // Los NPCs tienen name vacío, el jugador tiene un name
-        if (avatarShape.name === '') {
-          npcAvatarIds.add(avatarShape.id)
-        }
-      }
-      
-      for (const [entity, avatarAttach] of engine.getEntitiesWith(AvatarAttach)) {
-        if (avatarAttach.anchorPointId === AvatarAnchorPointType.AAPT_RIGHT_HAND) {
-          // Solo considerar items del jugador, no de NPCs
-          if (!avatarAttach.avatarId || !npcAvatarIds.has(avatarAttach.avatarId)) {
-            hasItem = true
-            break
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error checking right hand in spawnResultItem:', error)
-    }
+    // Check if the player already has something in the right hand
+    const itemInfo = hasItemInRightHand()
     
-    if (hasItem) {
+    if (itemInfo.hasItem) {
       console.warn(`Cannot spawn ${itemType}: player already has an item in right hand`)
       showUIMessage('You already have something in your right hand')
       return
     }
     
-    // Attachear directamente a la mano derecha del jugador
-    // (el ingrediente ya fue removido en handleInteraction)
+    // Attach directly to the player's right hand
+    // (the ingredient was already removed in handleInteraction)
 
     
-    // Determinar rotación: rotar 180 grados en X para Axe y Potion
+    // Determine rotation: rotate 180 degrees on X for Axe and Potion
     let rotation = Quaternion.fromEulerDegrees(0, 0, 0)
     if (itemType === ItemType.AXE || itemType === ItemType.POTION) {
       rotation = Quaternion.fromEulerDegrees(180, 0, 0)
     }
     
-    // Obtener la escala correcta según el tipo de item
+    // Get the correct scale according to the item type
     const scale = getItemScaleFromType(itemType)
     
-    // Crear nueva entidad para el resultado
+    // Create new entity for the result
     const resultEntity = engine.addEntity()
     
     Transform.create(resultEntity, {
@@ -461,25 +510,25 @@ export function spawnResultItem(itemType: ItemType) {
       scale: scale
     })
     
-    // Cargar el modelo
+    // Load the model
     GltfContainer.create(resultEntity, {
       src: getModelPathFromType(itemType),
-      visibleMeshesCollisionMask: 0, // Sin colisiones visibles
-      invisibleMeshesCollisionMask: 0 // Sin colisiones invisibles
+      visibleMeshesCollisionMask: 0, // No visible collisions
+      invisibleMeshesCollisionMask: 0 // No invisible collisions
     })
     
-    // Agregar componente Material con el tipo correcto
+    // Add Material component with the correct type
     Material.create(resultEntity, {
       id: itemType
     })
     
-    // Attachear a la mano derecha del jugador
+    // Attach to the player's right hand
     AvatarAttach.create(resultEntity, {
       anchorPointId: AvatarAnchorPointType.AAPT_RIGHT_HAND
     })
 }
   
-// Función helper para determinar el ItemType basándose en el modelPath
+// Helper function to determine ItemType based on modelPath
 export function getModelPathFromType(type: ItemType): string {
   if (type === ItemType.CUP) {
     return 'assets/asset-packs/wooden_cup/Cup_01/Cup_01.glb'
@@ -494,11 +543,11 @@ export function getModelPathFromType(type: ItemType): string {
   } else if (type === ItemType.ORE) {
     return 'assets/asset-packs/sandy_rock/RockSand_01/RockSand_01.glb'
   }
-  // Por defecto, intentar extraer del nombre del archivo
+  // By default, try to extract from the filename
   return 'assets/asset-packs/wooden_cup/Cup_01/Cup_01.glb' // fallback
 }
 
-// Función helper para obtener la escala según el tipo de item
+// Helper function to get the scale according to the item type
 export function getItemScaleFromType(type: ItemType): Vector3 {
   if (type === ItemType.HERB || type === ItemType.ORE) {
     return Vector3.create(0.25, 0.25, 0.25)
@@ -506,15 +555,8 @@ export function getItemScaleFromType(type: ItemType): Vector3 {
   return Vector3.create(1, 1, 1)
 }
 
-// Función helper para obtener modelo y escala según el tipo de item
-export function getItemModelAndScale(type: ItemType): { modelPath: string, scale: Vector3 } {
-  return {
-    modelPath: getModelPathFromType(type),
-    scale: getItemScaleFromType(type)
-  }
-}
 
-// Función helper para determinar el ItemType basándose en el modelPath
+// Helper function to determine ItemType based on modelPath
 export function getItemTypeFromModelPath(modelPath: string): ItemType {
   if (modelPath.includes('Cup_01') || modelPath.includes('cup')) {
     return ItemType.CUP
@@ -529,86 +571,81 @@ export function getItemTypeFromModelPath(modelPath: string): ItemType {
   } else if (modelPath.includes('ore') || modelPath.includes('Rock')) {
     return ItemType.ORE
   }
-  // Por defecto
+  // By default
   return ItemType.HERB // fallback
 }
 
-// Variable para almacenar la referencia de la entidad gameFinished
+// Variable to store the reference to the gameFinished entity
 let gameFinishedEntity: Entity | null = null
 
-// Variable para almacenar la referencia del NPCSpawner
+// Variable to store the reference to the NPCSpawner
 let npcSpawnerInstance: any = null
 
-// Arrays para almacenar referencias a las estaciones
+// Arrays to store references to stations
 let processingStations: ProcessingStation[] = []
 let craftingStations: CraftingStation[] = []
 
-// Array para almacenar las entidades de confetti en cada spot
+// Array to store confetti entities at each spot
 let confettiEntities: Entity[] = []
 
-// Map para rastrear el tiempo de activación de cada confetti
+// Map to track the activation time of each confetti
 const confettiActivationTime: Map<Entity, number> = new Map()
 
-// Función para establecer la referencia del NPCSpawner
+// Function to set the NPCSpawner reference
 export function setNPCSpawnerInstance(spawner: any) {
   npcSpawnerInstance = spawner
 }
 
-// Función para eliminar todos los items (del piso y attachados al jugador)
+// Function to remove all items (from the floor and attached to the player)
 function removeAllItems() {
   try {
-    // Obtener todos los NPCs para excluir sus items
-    const npcAvatarIds = new Set<string>()
-    for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
-      if (avatarShape.name === '') {
-        npcAvatarIds.add(avatarShape.id)
-      }
-    }
+    // Get all NPCs to exclude their items
+    const npcAvatarIds = getNPCAvatarIds()
     
     const itemsToRemove: Entity[] = []
     
-    // Encontrar todos los items con Material component
+    // Find all items with Material component
     for (const [entity, material] of engine.getEntitiesWith(Material)) {
-      // Verificar si está attachado a un NPC
+      // Check if it's attached to an NPC
       let isNPCItem = false
       
       if (AvatarAttach.has(entity)) {
         const avatarAttach = AvatarAttach.get(entity)
-        // Si tiene avatarId y es de un NPC, no eliminarlo (es item del NPC)
+        // If it has avatarId and it's from an NPC, don't remove it (it's the NPC's item)
         if (avatarAttach.avatarId && npcAvatarIds.has(avatarAttach.avatarId)) {
           isNPCItem = true
         }
       }
       
-      // Si NO es item de NPC, agregarlo a la lista para eliminar (incluye items del jugador y del piso)
+      // If it's NOT an NPC item, add it to the list to remove (includes player items and floor items)
       if (!isNPCItem) {
         itemsToRemove.push(entity)
       }
     }
     
-    // Eliminar todos los items encontrados
+    // Remove all found items
     for (const itemEntity of itemsToRemove) {
       try {
         engine.removeEntity(itemEntity)
       } catch (error) {
-        console.error('Error al eliminar item:', error)
+        console.error('Error removing item:', error)
       }
     }
   } catch (error) {
-    console.error('Error en removeAllItems:', error)
+    console.error('Error in removeAllItems:', error)
   }
 }
 
-// Función para reiniciar todas las estaciones
+// Function to reset all stations
 function resetAllStations() {
-  // Reiniciar ProcessingStations
+  // Reset ProcessingStations
   for (const station of processingStations) {
     if (station && typeof station.reset === 'function') {
       station.reset()
     }
   }
   
-  // Reiniciar CraftingStations
+  // Reset CraftingStations
   for (const station of craftingStations) {
     if (station && typeof station.reset === 'function') {
       station.reset()
@@ -617,46 +654,46 @@ function resetAllStations() {
   
 }
 
-// Función para mostrar el game finished (game over o you win)
+// Function to show game finished (game over or you win)
 export function gameFinished(winner: boolean) {
-  // Ocultar mensajes de UI
+  // Hide UI messages
   clearUIMessage()
   
-  // Detener el spawning de NPCs
+  // Stop NPC spawning
   if (npcSpawnerInstance && typeof npcSpawnerInstance.stopSpawning === 'function') {
     npcSpawnerInstance.stopSpawning()
   }
   
-  // Eliminar todos los NPCs inmediatamente
+  // Remove all NPCs immediately
   if (npcSpawnerInstance && typeof npcSpawnerInstance.removeAllNPCs === 'function') {
     npcSpawnerInstance.removeAllNPCs()
   } else {
-    // Fallback: eliminar NPCs manualmente
+    // Fallback: remove NPCs manually
     removeAllNPCs()
   }
   
-  // Eliminar todos los items (del piso y attachados al jugador)
+  // Remove all items (from the floor and attached to the player)
   removeAllItems()
   
-  // Reiniciar todas las estaciones
+  // Reset all stations
   resetAllStations()
   
-  // Crear entidad para el game finished
+  // Create entity for game finished
   gameFinishedEntity = engine.addEntity()
   
-  // Configurar transform con posición (8, 2, 10) y escala (2, 2, 1)
+  // Configure transform with position (8, 2, 10) and scale (2, 2, 1)
   Transform.create(gameFinishedEntity, {
     position: Vector3.create(8, 1, 10),
     rotation: Quaternion.fromEulerDegrees(22.5, 0, 0),
     scale: Vector3.create(1.5, 1.5, 1)
   })
   
-  // Cargar el modelo según si ganó o perdió
+  // Load the model according to whether they won or lost
   const modelPath = winner 
     ? 'assets/asset-packs/you_win/win3.glb'
     : 'assets/asset-packs/game_over/gameover2.glb'
   
-  // Ruta del sonido según si ganó o perdió
+  // Sound path according to whether they won or lost
   const soundPath = winner
     ? 'assets/asset-packs/you_win/wingame.mp3'
     : 'assets/asset-packs/game_over/gameover.mp3'
@@ -665,7 +702,7 @@ export function gameFinished(winner: boolean) {
     src: modelPath
   })
   
-  // Agregar animador para reproducir la animación "Play" del modelo
+  // Add animator to play the "Play" animation of the model
   Animator.create(gameFinishedEntity, {
     states: [
       {
@@ -679,7 +716,7 @@ export function gameFinished(winner: boolean) {
     ]
   })
   
-  // Agregar AudioSource para reproducir el sonido
+  // Add AudioSource to play the sound
   AudioSource.create(gameFinishedEntity, {
     audioClipUrl: soundPath,
     playing: true,
@@ -687,64 +724,64 @@ export function gameFinished(winner: boolean) {
     volume: 1.0
   })
   
-  // Establecer el estado de game over en la UI
+  // Set the game over state in the UI
   setGameOverState(true)
   
-  // Aquí se pueden agregar más efectos en el futuro
+  // More effects can be added here in the future
 }
 
-// Función para resetear el juego
+// Function to reset the game
 export function resetGame() {
-  // Resetear contadores
+  // Reset counters
   resetCounters()
   
-  // Eliminar la entidad del game finished
+  // Remove the game finished entity
   if (gameFinishedEntity !== null) {
     try {
       engine.removeEntity(gameFinishedEntity)
     } catch (error) {
-      console.error('Error al eliminar gameFinishedEntity:', error)
+      console.error('Error removing gameFinishedEntity:', error)
     }
     gameFinishedEntity = null
   }
   
-  // Ocultar el botón Play Again y resetear el estado de game over
+  // Hide the Play Again button and reset the game over state
   hidePlayAgainButton()
   setGameOverState(false)
   
-  // Reiniciar el spawning de NPCs (esto también eliminará NPCs existentes y reseteará el estado)
+  // Restart NPC spawning (this will also remove existing NPCs and reset the state)
   if (npcSpawnerInstance && typeof npcSpawnerInstance.restartSpawning === 'function') {
     npcSpawnerInstance.restartSpawning()
   } else {
-    // Fallback: eliminar NPCs manualmente
+    // Fallback: remove NPCs manually
     removeAllNPCs()
   }
   
-  // Limpiar mensaje de UI
+  // Clear UI message
   clearUIMessage()
 }
 
-// Función helper para eliminar todos los NPCs (los NPCs tienen name vacío en AvatarShape)
+// Helper function to remove all NPCs (NPCs have empty name in AvatarShape)
 function removeAllNPCs() {
   try {
     const npcsToRemove: Entity[] = []
     
-    // Encontrar todos los NPCs (tienen name vacío)
+    // Find all NPCs (they have empty name)
     for (const [entity, avatarShape] of engine.getEntitiesWith(AvatarShape)) {
       if (avatarShape.name === '') {
         npcsToRemove.push(entity)
       }
     }
     
-    // Eliminar todos los NPCs encontrados
+    // Remove all found NPCs
     for (const npcEntity of npcsToRemove) {
       try {
         engine.removeEntity(npcEntity)
       } catch (error) {
-        console.error('Error al eliminar NPC:', error)
+        console.error('Error removing NPC:', error)
       }
     }
   } catch (error) {
-    console.error('Error en removeAllNPCs:', error)
+    console.error('Error in removeAllNPCs:', error)
   }
 }

@@ -3,13 +3,13 @@
   "runtimeVersion": "7",
   "display": {
     "title": "Orcs want axes",
-    "description": "Empty Scene Template",
+    "description": "Orcs want axes, elves want potions! Craft the right items and keep your customers happy—or watch them storm off in a huff. Time's ticking, so don't mix up your orders!",
     "favicon": "favicon_asset",
     "navmapThumbnail": ""
   },
   "owner": "",
   "contact": {
-    "name": "SDK",
+    "name": "SebaDL",
     "email": ""
   },
   "main": "bin/index.js",
@@ -57,8 +57,10 @@
   },
   "source": {
     "origin": "creator-hub",
-    "projectId": "a2ed11af-3a0a-464c-a686-1fffdb085bf0"
+    "projectId": "61f670a3-a677-4b7c-a808-698134af94fb"
   },
-  "skyboxConfig": {},
+  "skyboxConfig": {
+    "fixedTime": 43200
+  },
   "rating": "T"
 }

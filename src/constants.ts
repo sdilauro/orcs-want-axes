@@ -1,38 +1,38 @@
 import { Vector3 } from '@dcl/sdk/math'
 
-// Constantes del juego
+// Game constants
 export const DELIVERED_TO_WIN = 5
 export const DELIVERED_TO_LOSE = 5
 
-// Constantes de UI
-export const MESSAGE_DURATION = 1.0 // segundos
+// UI constants
+export const MESSAGE_DURATION = 1.0 // seconds
 
-// Constantes de NPCs
-export const NPC_SPAWN_INTERVAL = 2000 // milisegundos entre cada NPC
-export const NPC_SPEED = 1.2 // metros por segundo
-export const NPC_WAIT_TIME = 10.0 // segundos que espera el NPC en el spot antes de marcharse
-export const NPC_WAIT_TIME_RANGE = 2.0 // variación del NPC_WAIT_TIME para que no todos esperen el mismo tiempo
+// NPC constants
+export const NPC_SPAWN_INTERVAL = 2000 // milliseconds between each NPC
+export const NPC_SPEED = 1.2 // meters per second
+export const NPC_WAIT_TIME = 20.0 // base seconds the NPC waits at the spot before leaving
+export const NPC_WAIT_TIME_VARIATION = 2.0 // random variation in seconds (±) added to NPC_WAIT_TIME so they don't all wait the same time
 export const arrivalEmotes = ['wave', 'raiseHand', 'handsup']
 export const goodbyeEmotes = ['clap', 'dontsee']
 
-// Posiciones de spots donde se paran los NPCs
+// Spot positions where NPCs stop
 export const NPC_SPOTS: { id: number, position: Vector3 }[] = [
   { id: 0, position: Vector3.create(9.75, 0, 15) },
   { id: 1, position: Vector3.create(8.1, 0, 15) },
   { id: 2, position: Vector3.create(6.5, 0, 15) }
 ]
 
-// Posiciones de origen de los NPCs
+// NPC origin positions
 export const NPC_ORIGIN_EAST = Vector3.create(14, 0, 18)
 export const NPC_ORIGIN_WEST = Vector3.create(2, 0, 18)
 
-// Rotaciones de confetti para cada spot
+// Confetti rotations for each spot
 export const CONFETTI_ROTATIONS = [-45, -90, -135]
 
-// Constantes de estaciones de trabajo
-export const WORK_DURATION = 1.0 // segundos para procesar/craftear
+// Work station constants
+export const WORK_DURATION = 2.0 // seconds to process/craft
 
-// Enum para los tipos de items
+// Enum for item types
 export enum ItemType {
   HERB = 'herb',
   CUP = 'cup',

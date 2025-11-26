@@ -1,32 +1,32 @@
 import { ReactEcsRenderer } from '@dcl/sdk/react-ecs'
 import { uiComponent } from './ui'
 
-// Importar NPCSpawner
+// Import NPCSpawner
 import { NPCSpawner } from './npcSpawner'
-// Importar helpers
+// Import helpers
 import { setupCinematicCamera, createWorkStations, createStorageStations, createDiscardStation, setNPCSpawnerInstance, createConfettiItems } from './helpers'
 import { NPC_SPAWN_INTERVAL, NPC_SPEED } from './constants'
 
 export function main() {
-  // Configurar la cámara cinematográfica
+  // Set up the cinematic camera
   setupCinematicCamera()
 
-  // Configurar el renderer de UI
+  // Set up the UI renderer
   ReactEcsRenderer.setUiRenderer(uiComponent)
 
   createWorkStations()
   createStorageStations()
   createDiscardStation()
   
-  // Crear los confetti en cada spot
+  // Create confetti at each spot
   createConfettiItems()
 
-  // Crear el spawner de NPCs
+  // Create the NPC spawner
   const npcSpawner = new NPCSpawner(
-    NPC_SPAWN_INTERVAL, // spawnInterval en milisegundos
-    NPC_SPEED   // speed en metros por segundo
+    NPC_SPAWN_INTERVAL, // spawnInterval in milliseconds
+    NPC_SPEED   // speed in meters per second
   )
 
-  // Establecer la referencia del spawner en helpers para poder resetear el juego
+  // Set the spawner reference in helpers to be able to reset the game
   setNPCSpawnerInstance(npcSpawner)
 }

@@ -5,11 +5,11 @@ import { DELIVERED_TO_WIN, DELIVERED_TO_LOSE } from './constants'
 
 let currentMessage: string = ''
 
-// Contadores de entregas
+// Delivery counters
 let goodDelivered: number = 0
 let badDelivered: number = 0
 
-// Estado de game over
+// Game over state
 let isGameOver: boolean = false
 let showPlayAgainButton: boolean = false
 
@@ -25,18 +25,18 @@ export function getMessage(): string {
   return currentMessage
 }
 
-// Funciones para incrementar contadores
+// Functions to increment counters
 export function incrementGoodDelivered() {
   goodDelivered++
   if (goodDelivered >= DELIVERED_TO_WIN) {
-    gameFinished(true) // true = ganó
+    gameFinished(true) // true = won
   }
 }
 
 export function incrementBadDelivered() {
   badDelivered++
   if (badDelivered >= DELIVERED_TO_LOSE) {
-    gameFinished(false) // false = perdió
+    gameFinished(false) // false = lost
   }
 }
 
@@ -44,7 +44,7 @@ export function getBadDelivered(): number {
   return badDelivered
 }
 
-// Funciones para controlar el estado de game over
+// Functions to control game over state
 export function setGameOverState(value: boolean) {
   isGameOver = value
   showPlayAgainButton = value
@@ -59,7 +59,7 @@ export function hidePlayAgainButton() {
   showPlayAgainButton = false
 }
 
-// Función para verificar si el juego está en estado de game over
+// Function to check if the game is in game over state
 export function isGameOverActive(): boolean {
   return isGameOver
 }
@@ -75,7 +75,7 @@ export const uiComponent = () => {
         justifyContent: 'center'
       }}
     >
-      {/* Contadores permanentes centrados en la parte superior - ocultos en game over */}
+      {/* Permanent counters centered at the top - hidden in game over */}
       {!isGameOver && (
         <UiEntity
           uiTransform={{
@@ -107,7 +107,7 @@ export const uiComponent = () => {
         </UiEntity>
       )}
       
-      {/* Mensaje temporal en la parte inferior */}
+      {/* Temporary message at the bottom */}
       {currentMessage !== '' && (
         <UiEntity
           uiTransform={{
@@ -127,7 +127,7 @@ export const uiComponent = () => {
         </UiEntity>
       )}
 
-      {/* Botón Play Again en la parte inferior - solo visible cuando showPlayAgainButton es true */}
+      {/* Play Again button at the bottom - only visible when showPlayAgainButton is true */}
       {showPlayAgainButton && (
         <UiEntity
           uiTransform={{
