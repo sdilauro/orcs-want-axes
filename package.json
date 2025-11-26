@@ -1,7 +1,7 @@
 {
-  "name": "dcl-project",
+  "name": "orcs-want-axes",
   "version": "1.0.0",
-  "description": "SDK7 Template scene",
+  "description": "Orcs want axes, elves want potions! Craft the right items and keep your customers happy—or watch them storm off in a huff. Time's ticking, so don't mix up your orders!",
   "scripts": {
     "start": "sdk-commands start",
     "deploy": "sdk-commands deploy",

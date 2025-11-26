@@ -43,7 +43,7 @@
       "cameraTarget": {
         "x": 8,
         "y": 1,
-        "z": 8
+        "z": 15
       }
     }
   ],
@@ -62,5 +62,8 @@
   "skyboxConfig": {
     "fixedTime": 43200
   },
-  "rating": "T"
+  "rating": "T",
+  "worldConfiguration": {
+    "name": "sebadl.dcl.eth"
+  }
 }
