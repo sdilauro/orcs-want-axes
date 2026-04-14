@@ -2,7 +2,7 @@
   "ecs7": true,
   "runtimeVersion": "7",
   "display": {
-    "title": "Orcs want axes",
+    "title": "Orcs want axess",
     "description": "Orcs want axes, elves want potions! Craft the right items and keep your customers happy—or watch them storm off in a huff. Time's ticking, so don't mix up your orders!",
     "favicon": "favicon_asset",
     "navmapThumbnail": "assets/images/orcs-want-axes-3.png"
@@ -17,10 +17,10 @@
     "game"
   ],
   "scene": {
+    "base": "0,0",
     "parcels": [
       "0,0"
-    ],
-    "base": "0,0"
+    ]
   },
   "spawnPoints": [
     {
@@ -65,5 +65,6 @@
   "rating": "T",
   "worldConfiguration": {
     "name": "sebadl.dcl.eth"
-  }
+  },
+  "creator": ""
 }

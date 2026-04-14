@@ -2,6 +2,7 @@ import { ReactEcs, UiEntity, Label, Button } from '@dcl/sdk/react-ecs'
 import { Color4 } from '@dcl/sdk/math'
 import { gameFinished, resetGame } from './helpers'
 import { DELIVERED_TO_WIN, DELIVERED_TO_LOSE } from './constants'
+import { adminPanelComponent } from './adminPanel'
 
 let currentMessage: string = ''
 
@@ -157,6 +158,9 @@ export const uiComponent = () => {
           />
         </UiEntity>
       )}
+
+      {/* Admin Panel */}
+      {adminPanelComponent()}
     </UiEntity>
   )
 }

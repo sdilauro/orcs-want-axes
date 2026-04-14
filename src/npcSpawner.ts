@@ -131,7 +131,6 @@ export class NPCSpawner {
         return spot
       }
     }
-    console.log('No available spots')
     return null
   }
 

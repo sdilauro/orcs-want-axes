@@ -5,9 +5,11 @@
  * Object containing all entity names in the scene for autocomplete support.
  */
 export enum EntityNames {
+  Admin_Tools = "Admin Tools",
   Alabastron = "Alabastron",
   Alchemy_Equipment_2 = "Alchemy Equipment_2",
   Ambient_Music___Medieval_2 = "Ambient Music - Medieval 2",
+  Bar_Stool = "Bar Stool",
   Blue_Potion = "Blue Potion",
   Building = "Building",
   Corner_Stone_Brick_Wall = "Corner Stone Brick Wall",
@@ -17,7 +19,6 @@ export enum EntityNames {
   Drawers_2_3_6 = "Drawers_2_3_6",
   Dreamwhisper_Codex = "Dreamwhisper Codex",
   Elixir = "Elixir",
-  Game_Over = "Game Over",
   Green_Potion = "Green Potion",
   Ground = "Ground",
   Invisible_Wall = "Invisible Wall",

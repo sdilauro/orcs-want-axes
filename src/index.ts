@@ -6,6 +6,7 @@ import { NPCSpawner } from './npcSpawner'
 // Import helpers
 import { setupCinematicCamera, createWorkStations, createStorageStations, createDiscardStation, setNPCSpawnerInstance, createConfettiItems } from './helpers'
 import { NPC_SPAWN_INTERVAL, NPC_SPEED } from './constants'
+import { initAdminPanel } from './adminPanel'
 
 export function main() {
   // Set up the cinematic camera
@@ -29,4 +30,7 @@ export function main() {
 
   // Set the spawner reference in helpers to be able to reset the game
   setNPCSpawnerInstance(npcSpawner)
+
+  // Initialize admin panel
+  initAdminPanel()
 }
